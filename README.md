@@ -19,9 +19,17 @@ Ajouter un client GATT/SDK Meshtastic validé contre la version choisie, puis le
 ## Prudence
 Aucune écriture en mémoire flash, aucune modification de firmware, aucune émission LoRa depuis cette application.
 
+## Historique du projet
+
+Consulter [CHANGELOG.md](CHANGELOG.md) pour les modifications, leurs raisons,
+les validations réalisées, les limitations et les prochaines actions.
+Chaque évolution doit y être consignée, sans secrets ni données privées.
+
 ## Build without a PC (GitHub Actions)
 Upload the contents of this `HybridBridge` folder to the root of a GitHub repository.
 Open Actions > Build HybridBridge APK > Run workflow. After completion,
 download the artifact `HybridBridge-0.1-debug-apk`, extract it and install
 `app-debug.apk` on Android. This debug build is for local testing only.
-The build has not been verified in this environment.
+The debug compilation succeeded in GitHub Actions on 2026-11-06 and the APK
+artifact was produced. Installation and BLE discovery on a real phone have not
+yet been verified. See [CHANGELOG.md](CHANGELOG.md) for evidence and limitations.
