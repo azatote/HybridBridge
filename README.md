@@ -37,5 +37,6 @@ Open Actions > Build HybridBridge APK > Run workflow. After completion,
 download the artifact `HybridBridge-0.1-debug-apk`, extract it and install
 `app-debug.apk` on Android. This debug build is for local testing only.
 The debug compilation succeeded in GitHub Actions on 2026-11-06 and the APK
-artifact was produced. Installation and BLE discovery on a real phone have not
-yet been verified. See [CHANGELOG.md](CHANGELOG.md) for evidence and limitations.
+artifact was produced. The user reported successful installation and Heltec
+discovery after a long wait. Detection latency still needs measurement; GATT
+connection and messaging are not implemented. See [CHANGELOG.md](CHANGELOG.md).

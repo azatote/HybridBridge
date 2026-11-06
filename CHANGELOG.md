@@ -11,6 +11,41 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-06 - Correction du retour de test sur telephone
+
+- L'utilisateur retire son premier constat d'echec : apres une longue attente,
+  la recherche de l'APK a abouti et le Heltec est apparu, decrit comme connecte.
+- Resultat rapporte : installation et decouverte BLE reussies sur le telephone.
+  Duree exacte, version de l'APK, version Android et firmware a relever.
+- Le code inspecte ne contient aucune connexion GATT ni echange de messages :
+  la detection ne constitue pas une preuve de connexion Meshtastic fonctionnelle.
+- Le filtre UUID n'est donc pas confirme comme cause d'un echec de detection.
+- Les changements locaux de diagnostic 0.2 sont conserves, sans publication
+  du code ni nouvelle compilation dans cette intervention.
+- Fichiers documentaires mis a jour : `CHANGELOG.md` et `README.md`.
+- Prochaine verification : reproduire la detection et mesurer le delai.
+
+## 2026-11-06 - Version 0.2 : diagnostic de decouverte BLE
+
+- Retour initial de l'utilisateur : Meshtastic officiel detecte le Heltec,
+  HybridBridge semble ne pas le detecter. Ce constat est retire par le retour
+  ulterieur de detection apres une longue attente, consigne ci-dessus.
+- Hypothese : le filtre UUID applique par Android masque des annonces BLE.
+  Ce n'est pas une cause prouvee sans le prochain essai sur telephone.
+- Fichiers : `MainActivity.kt`, `app/build.gradle.kts`, workflow Android et ce journal.
+- Scan sans filtre systeme, classification locale par UUID annonce ; option
+  explicite pour afficher tous les appareils BLE et distinguer les non identifies.
+- Compteurs BLE/affichage, scan limite a 30 secondes, resultats defilants,
+  traitement des resultats par lots et messages de refus de permissions.
+- Version Android : versionCode 2, versionName 0.2 ; artefact CI nomme
+  `HybridBridge-0.2-debug-apk`.
+- Verification editeur : aucun diagnostic Kotlin signale. Compilation CI a verifier.
+- Test discriminant : cocher Tous les appareils BLE avant Rechercher les Heltec ;
+  relever les compteurs, le nom du Heltec et la presence ou non du service annonce.
+  Puis comparer avec une recherche sans cette option, sans connexion officielle concurrente.
+- Limites : aucun appareil non identifie n'est affirme compatible ; pas de GATT,
+  pas de messages, pas de flash ; diagnostic 0.2 non encore valide sur telephone.
+
 ## 2026-11-06 - Lien de telechargement APK en tete du README
 
 - Fichiers : `README.md` et `CHANGELOG.md`.
@@ -89,7 +124,7 @@ Les entrees ci-dessous retracent uniquement les faits observes dans cette sessio
 
 ## Travaux restants
 
-- Telecharger l'artefact `HybridBridge-0.1-debug-apk` et installer `app-debug.apk`.
-- Realiser et consigner le premier test de decouverte BLE sur le Samsung.
+- Reproduire la detection rapportee, mesurer le delai et relever les versions
+  de l'APK, d'Android et du firmware Meshtastic.
 - Poursuivre ensuite les phases du cahier des charges, sans annoncer une
   connexion ou une passerelle fonctionnelle avant validation sur appareils reels.
