@@ -1,1 +1,27 @@
-# HybridBridge
+# HybridBridge 0.1 — première étape
+
+Application Android Kotlin native pour **découvrir les appareils Meshtastic en BLE** sans flasher les Heltec.
+
+## État réel
+- Inclus : permissions Android 12+, scan BLE filtré sur le service Meshtastic, affichage nom/adresse/RSSI, arrêt du scan.
+- Non inclus : connexion GATT, SDK Meshtastic, lecture/envoi de messages, Bitchat, passerelle, chiffrement, APK précompilé.
+- Cette étape est volontairement limitée et vérifiable. Ne pas la présenter comme une passerelle fonctionnelle.
+
+## Compiler
+1. Ouvrir ce dossier avec Android Studio récent (JDK 17, Android SDK 35).
+2. Laisser Gradle synchroniser et installer les dépendances.
+3. Build > Build APK(s) puis installer sur Android 8.0+ (Android 12+ testé en priorité).
+4. Activer le Bluetooth et Meshtastic sur le Heltec, autoriser les permissions, lancer la recherche.
+
+## Suite
+Ajouter un client GATT/SDK Meshtastic validé contre la version choisie, puis le moteur Bitchat et les règles de routage/chiffrement. Le service UUID est celui couramment documenté pour Meshtastic BLE ; vérifier qu'il correspond au firmware de l'appareil.
+
+## Prudence
+Aucune écriture en mémoire flash, aucune modification de firmware, aucune émission LoRa depuis cette application.
+
+## Build without a PC (GitHub Actions)
+Upload the contents of this `HybridBridge` folder to the root of a GitHub repository.
+Open Actions > Build HybridBridge APK > Run workflow. After completion,
+download the artifact `HybridBridge-0.1-debug-apk`, extract it and install
+`app-debug.apk` on Android. This debug build is for local testing only.
+The build has not been verified in this environment.
