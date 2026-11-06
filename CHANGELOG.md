@@ -11,6 +11,17 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-06 - Lien de telechargement APK en tete du README
+
+- Fichiers : `README.md` et `CHANGELOG.md`.
+- Ajout du lien vers l'artefact 13536763865 de la compilation reussie 42285264911.
+- Le README precise : connexion GitHub, ZIP a extraire, APK debug de test,
+  expiration le 4 fevrier 2027 sauf suppression anticipee.
+- Suppression de la mention obsolete indiquant que l'APK precompile est absent.
+- Verification API GitHub : artefact present et non expire au moment de l'ajout.
+- Limites : ce lien d'artefact n'est pas une release permanente ; aucun nouveau
+  test materiel ni changement du code Android dans cette intervention.
+
 ## 2026-11-06 - Mise en place du suivi des evolutions
 
 - Fichiers locaux : creation de `CHANGELOG.md` et ajout d'un lien dans `README.md`.
