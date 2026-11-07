@@ -34,33 +34,34 @@ jobs:
             $failures += [int]$report.testsuite.failures
             $errors += [int]$report.testsuite.errors
           }
-          if ($tests -lt 21 -or $failures -ne 0 -or $errors -ne 0) { throw "Tests invalides : $tests tests, $failures echecs, $errors erreurs" }
+          if ($tests -lt 28 -or $failures -ne 0 -or $errors -ne 0) { throw "Tests invalides : $tests tests, $failures echecs, $errors erreurs" }
           $apk = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path 'app/build/outputs/apk/debug/app-debug.apk'))
           try {
-            foreach ($path in @('assets/licenses/GPL-3.0.txt', 'assets/licenses/Protobuf-License.txt')) {
+            foreach ($path in @('assets/licenses/GPL-3.0.txt', 'assets/licenses/Protobuf-License.txt', 'assets/licenses/BouncyCastle-LICENSE.html')) {
               if ($null -eq $apk.GetEntry($path)) { throw "Licence absente : $path" }
             }
           } finally { $apk.Dispose() }
           Write-Output "$tests tests, $failures failures, $errors errors ; APK licenses verified"
       - uses: actions/upload-artifact@v4
         with:
-          name: HybridBridge-0.4.1-debug-apk
+          name: HybridBridge-0.5-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: HybridBridge-0.4.1-test-results
+          name: HybridBridge-0.5-test-results
           path: app/build/test-results/testDebugUnitTest/*.xml
           if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         with:
-          name: HybridBridge-0.4.1-corresponding-source
+          name: HybridBridge-0.5-corresponding-source
           path: |
             app/src/
             app/build.gradle.kts
             app/build/meshtastic-protos/
             app/build/bitchat-protocol-source/
+            app/build/license-assets/
             build.gradle.kts
             settings.gradle.kts
             gradle.properties
