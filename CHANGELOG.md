@@ -11,6 +11,42 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-07 - Version 0.4 : synchronisation et messagerie Meshtastic
+
+- Licence GPLv3 et sources publiques approuvees par l'utilisateur ; ajout
+  de `LICENSE` officiel et licences embarquees GPLv3/runtime protobuf.
+- Generation Java protobuf depuis les schemas epingles du firmware 2.7.26,
+  sans imposer le Kotlin 2.4.10 de l'artefact amont a Kotlin 2.0.21 du projet.
+- Synchronisation MyInfo/Metadata/Channels, verification du nonce de fin,
+  firmware 2.7.x requis, lectures/ecritures GATT serialisees et timeouts.
+- Vues Appareils, Messages et Etat. Messages de canal confirmes avant envoi,
+  limites UTF-8/MTU, historique borne et statut Transmis au Heltec explicite.
+- Messages directs/chiffres non affiches, aucun relais prive ou Bitchat.
+- Fichiers : Gradle racine/app, LICENSE, MainActivity, MeshtasticGattClient,
+  nouveau MeshtasticProtocol, nouveau MeshtasticProtocolTest, workflow,
+  audit amont et ce journal. Neuf tests de protocole ajoutes aux cinq tests GATT.
+- CI complete lancee depuis le commit
+  [43c313e](https://github.com/azatote/HybridBridge/commit/43c313eeb2aaba947d2c16cc4efaea82930efa84) :
+  [42365094752](https://github.com/azatote/HybridBridge/actions/runs/42365094752).
+  Echec de compilation Kotlin DSL : `java.net` masque par le DSL et configuration
+  `proto` incorrecte ; corrige par import URI et bloc `proto { ... }`.
+- Deuxieme CI [42365245941](https://github.com/azatote/HybridBridge/actions/runs/42365245941) :
+  descriptor.proto manquant pour les extensions nanopb. Ajout du descripteur
+  officiel et passage au runtime Java complet, sans duplication de classes Google.
+- Troisieme CI [42365419514](https://github.com/azatote/HybridBridge/actions/runs/42365419514),
+  commit `efcc69968b5555c4f6b21429799a7ded1cc3090a` : compilation et tests reussis.
+- Ajout d'un intervalle minimal de 15 secondes entre deux emissions utilisateur.
+- CI finale [42365776287](https://github.com/azatote/HybridBridge/actions/runs/42365776287),
+  commit `77da7e18d8af33e51fb04d0d2e19be92347c5261`, `completed / success`.
+  Tests, compilation et verification XML (au moins 14 tests, zero echec/erreur)
+  reussis ; presence des deux licences verifiee dans le ZIP APK par la CI.
+  Artefact APK 13571880617, 2620236 octets, sources 13571114910,
+  rapports XML 13572145016 ; expiration annoncee le 5 fevrier 2027.
+  Diagnostics editeur sans nouvelles erreurs.
+- La CI doit publier APK, resultats XML et archive des sources correspondantes.
+- Limites : echanges reels non encore testes ; Bitchat, pont public, E2EE,
+  persistance et service de fond restent a realiser. Ceci n'est pas la version finale.
+
 ## 2026-11-07 - Version 0.3 : connexion GATT de test
 
 - Client GATT independant : connexion BLE directe, verification du service
@@ -167,8 +203,10 @@ Les entrees ci-dessous retracent uniquement les faits observes dans cette sessio
 
 ## Travaux restants
 
-- Installer l'APK 0.3 et valider la lecture GATT FromNum, la batterie si disponible,
-  la deconnexion et une deuxieme connexion sur le Samsung et le Heltec.
+- Installer l'APK 0.4 et valider synchronisation, canaux et messages de test
+  dans les deux sens entre deux noeuds Meshtastic, sans connexion officielle concurrente.
+- Completer l'audit Bitchat et son integration, le pont public anti-boucles,
+  l'E2EE, la persistance, Compose, le service de fond et la signature release.
 - Reproduire la detection rapportee, mesurer le delai et relever les versions
   de l'APK, d'Android et du firmware Meshtastic.
 - Poursuivre ensuite les phases du cahier des charges, sans annoncer une

@@ -808,13 +808,14 @@ Une fonctionnalité n'est considérée comme terminée que si :
 
 - L'utilisateur possède deux Heltec avec Meshtastic et souhaite **ne pas les reflasher**.
 - Le Heltec V4.3 a déjà communiqué par port série avec Meshtastic ; ceci ne prouve pas à lui seul que la connexion BLE de HybridBridge fonctionne.
-- HybridBridge 0.3 ajoute sélection, connexion/déconnexion GATT, vérification du
-    service Meshtastic et lecture FromNum/batterie facultative. Contrat vérifié
-    dans le firmware 2.7.26 ; aucune synchronisation protobuf ni messagerie.
-- La CI [42363246117](https://github.com/azatote/HybridBridge/actions/runs/42363246117)
-    a réussi les tests unitaires et la compilation de l'APK 0.3 le 7 novembre 2026.
+- HybridBridge 0.4 ajoute synchronisation du nœud/firmware/canaux et messages
+    de canal via les protobufs épinglés au firmware 2.7.26, avec file GATT
+    sérialisée, limites de taille et d'émission. Bitchat et le pont ne sont pas livrés.
+- La CI [42365776287](https://github.com/azatote/HybridBridge/actions/runs/42365776287)
+    a réussi les tests, la compilation et le contrôle des licences de l'APK 0.4
+    le 7 novembre 2026. Licence GPLv3 et sources publiques approuvées par l'utilisateur.
 - L'utilisateur a rapporté la découverte du Heltec après une longue attente
-    avec l'APK précédent. Le test de connexion GATT 0.3 reste à réaliser.
+    avec l'APK précédent. Les tests de synchronisation et d'échanges 0.4 restent à réaliser.
 - Le dépôt GitHub de l'utilisateur est nommé « Pont hybride » dans son interface ; son chemin visible dans la capture était `azatote/HybridBridge`. Vérifier le dépôt local réellement ouvert avant de modifier quoi que ce soit.
 
 ### Ce qui n'est pas encore validé
@@ -826,7 +827,7 @@ Une fonctionnalité n'est considérée comme terminée que si :
 - Passerelle publique fonctionnelle.
 - Chiffrement privé HybridBridge.
 - Transport opaque de conversations privées Bitchat.
-- APK 0.3 installé et connexion GATT testée sur le téléphone.
+- APK 0.4 installé, synchronisation et messages testés sur le matériel.
 
 **Ne pas cocher une fonctionnalité comme livrée sans preuve.**
 
