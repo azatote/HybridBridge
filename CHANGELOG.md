@@ -17,10 +17,12 @@ Les entrees ci-dessous retracent uniquement les faits observes dans cette sessio
   sur le Samsung Android 14 utilise pour le test.
 - Le crash de demarrage n'est plus observe lors de cet essai de la 0.4.1.
   La cause exacte de la fermeture 0.4 reste non demontree.
-- Synchronisation du noeud/canaux et livraison des messages dans les deux sens :
-  non encore confirmees par ce retour. Ne pas les marquer comme validees.
+- Retour suivant : l'utilisateur confirme l'etat Meshtastic synchronise,
+  avec firmware et canaux affiches. Version exacte du firmware non communiquee.
+- Livraison des messages dans les deux sens : non encore confirmee.
+  Ne pas la deduire de la connexion ou de la synchronisation.
 - Fichiers documentaires : README et ce journal ; aucun changement de code ni nouvel APK.
-- Prochain test : etat Meshtastic synchronise, puis un texte de canal recu
+- Prochain test : un texte de canal recu
   sur le second noeud/client et un texte de retour affiche dans HybridBridge.
 
 ## 2026-11-07 - Incident : fermeture au demarrage de la 0.4
