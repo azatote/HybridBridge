@@ -10,6 +10,7 @@ import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.UUID
@@ -34,6 +35,7 @@ class MeshtasticGattClient(
     private var nodeName = ""
     private var firmware = ""
     private var ready = false
+    private var lastMessageQueuedAt = -15_000L
     private val channels = linkedMapOf<Int, MeshChannel>()
     private val seenMessages = linkedSetOf<String>()
     private val operations = java.util.ArrayDeque<Operation>()
@@ -204,7 +206,10 @@ class MeshtasticGattClient(
         while (packetId == 0) packetId = random.nextInt()
         val bytes = MeshtasticProtocol.channelText(nodeNumber!!, channelIndex, packetId, text)
         require(bytes.size <= minOf(mtu - 3, MeshtasticProtocol.MAX_GATT_BYTES)) { "Message trop long pour la liaison BLE negociee" }
+        val now = SystemClock.elapsedRealtime()
+        check(now - lastMessageQueuedAt >= 15_000) { "Attendre 15 secondes entre deux envois de test" }
         val message = MeshText(packetId, nodeNumber!!, channelIndex, text, true, "En attente")
+        lastMessageQueuedAt = now
         remember(message)
         onMessage(message)
         operations.add(Operation(bytes = bytes, message = message))
