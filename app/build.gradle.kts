@@ -4,7 +4,31 @@ import java.net.URI
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-parcelize")
     id("com.google.protobuf")
+}
+
+val bitchatProtocolDirectory = layout.buildDirectory.dir("bitchat-protocol-source")
+val prepareBitchatProtocol by tasks.registering {
+    val revision = "20501fdfe0d56c7705c377d4a263b01d8f38eeeb"
+    inputs.property("revision", revision)
+    outputs.dir(bitchatProtocolDirectory)
+    doLast {
+        val paths = listOf(
+            "protocol/BinaryProtocol.kt", "protocol/CompressionUtil.kt",
+            "protocol/DecompressionResourcePool.kt", "protocol/MessagePadding.kt",
+            "protocol/PacketPayloadLimits.kt", "util/AppConstants.kt"
+        )
+        for (path in paths) {
+            val target = bitchatProtocolDirectory.get().file("com/bitchat/android/$path").asFile
+            target.parentFile.mkdirs()
+            URI("https://raw.githubusercontent.com/permissionlesstech/bitchat-android/$revision/app/src/main/java/com/bitchat/android/$path")
+                .toURL().openStream().use { source -> target.outputStream().use { source.copyTo(it) } }
+        }
+        val license = bitchatProtocolDirectory.get().file("Bitchat-LICENSE.md").asFile
+        URI("https://raw.githubusercontent.com/permissionlesstech/bitchat-android/$revision/LICENSE.md")
+            .toURL().openStream().use { source -> license.outputStream().use { source.copyTo(it) } }
+    }
 }
 
 val schemaDirectory = layout.buildDirectory.dir("meshtastic-protos")
@@ -54,6 +78,11 @@ android {
         exclude("google/protobuf/descriptor.proto")
     }
     sourceSets.getByName("main").assets.srcDir(licenseDirectory)
+    sourceSets.getByName("main").java.srcDir(bitchatProtocolDirectory)
+}
+
+tasks.matching { it.name.startsWith("compile") && it.name.endsWith("Kotlin") }.configureEach {
+    dependsOn(prepareBitchatProtocol)
 }
 
 tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
