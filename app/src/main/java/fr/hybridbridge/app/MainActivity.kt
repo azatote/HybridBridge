@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -20,10 +21,10 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.Spinner
-import android.widget.TabHost
-import android.widget.TabWidget
 import android.widget.TextView
 import android.widget.Toast
 
@@ -84,15 +85,20 @@ class MainActivity : Activity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            createInterface()
+        } catch (error: RuntimeException) {
+            showStartupDiagnostic(error)
+        }
+    }
+
+    private fun createInterface() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 24, 24, 12) }
-        root.addView(TextView(this).apply { text = "HybridBridge 0.4"; textSize = 22f })
-        val tabHost = TabHost(this)
-        val tabLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        tabLayout.addView(TabWidget(this).apply { id = android.R.id.tabs })
-        tabLayout.addView(FrameLayout(this).apply { id = android.R.id.tabcontent }, LinearLayout.LayoutParams(-1, 0, 1f))
-        tabHost.addView(tabLayout, android.view.ViewGroup.LayoutParams(-1, -1))
-        root.addView(tabHost, LinearLayout.LayoutParams(-1, 0, 1f))
-        tabHost.setup()
+        root.addView(TextView(this).apply { text = "HybridBridge 0.4.1"; textSize = 22f })
+        val navigation = RadioGroup(this).apply { orientation = RadioGroup.HORIZONTAL }
+        val content = FrameLayout(this)
+        root.addView(navigation)
+        root.addView(content, LinearLayout.LayoutParams(-1, 0, 1f))
         val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         status = TextView(this).apply { text = "Prêt à rechercher un Heltec"; textSize = 16f }
         results = TextView(this).apply { text = "Aucun appareil découvert"; textSize = 15f }
@@ -154,10 +160,45 @@ class MainActivity : Activity() {
             sendButton.isEnabled = ready
             messageStatus.text = message
         }, { node -> updateNode(node) }, { message -> updateMessage(message) })
-        tabHost.addTab(tabHost.newTabSpec("devices").setIndicator("Appareils").setContent { layout })
-        tabHost.addTab(tabHost.newTabSpec("messages").setIndicator("Messages").setContent { messageLayout })
-        tabHost.addTab(tabHost.newTabSpec("state").setIndicator("Etat").setContent { stateLayout })
+        val screens = listOf(layout, messageLayout, stateLayout)
+        val labels = listOf("Appareils", "Messages", "Etat")
+        val navigationIds = labels.map { android.view.View.generateViewId() }
+        screens.forEachIndexed { index, screen ->
+            screen.visibility = if (index == 0) android.view.View.VISIBLE else android.view.View.GONE
+            content.addView(screen, FrameLayout.LayoutParams(-1, -1))
+            navigation.addView(RadioButton(this).apply {
+                id = navigationIds[index]
+                text = labels[index]
+                textSize = 14f
+            }, RadioGroup.LayoutParams(0, -2, 1f))
+        }
+        navigation.check(navigationIds.first())
+        navigation.setOnCheckedChangeListener { _, checkedId ->
+            val selected = navigationIds.indexOf(checkedId)
+            screens.forEachIndexed { index, screen ->
+                screen.visibility = if (index == selected) android.view.View.VISIBLE else android.view.View.GONE
+            }
+        }
         setContentView(root)
+    }
+
+    private fun showStartupDiagnostic(error: RuntimeException) {
+        val details = "HybridBridge 0.4.1 - erreur de demarrage\nAndroid API ${Build.VERSION.SDK_INT}\n" +
+            error.javaClass.name + "\n" + error.stackTrace.take(8).joinToString("\n") {
+                "${it.className}.${it.methodName}:${it.lineNumber}"
+            }
+        val fallback = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 24, 24, 24) }
+        fallback.addView(TextView(this).apply { text = details; textSize = 14f }, LinearLayout.LayoutParams(-1, 0, 1f))
+        fallback.addView(Button(this).apply {
+            text = "Partager le diagnostic"
+            setOnClickListener {
+                startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, details)
+                }, "Diagnostic HybridBridge"))
+            }
+        })
+        setContentView(fallback)
     }
 
     private fun updateNode(node: MeshNode?) {
