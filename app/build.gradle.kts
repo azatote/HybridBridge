@@ -29,6 +29,10 @@ val prepareMeshtasticProtos by tasks.registering {
             URI("https://raw.githubusercontent.com/meshtastic/protobufs/$revision/$path")
                 .toURL().openStream().use { source -> target.outputStream().use { source.copyTo(it) } }
         }
+        val descriptor = schemaDirectory.get().file("google/protobuf/descriptor.proto").asFile
+        descriptor.parentFile.mkdirs()
+        URI("https://raw.githubusercontent.com/protocolbuffers/protobuf/v25.5/src/google/protobuf/descriptor.proto")
+            .toURL().openStream().use { source -> descriptor.outputStream().use { source.copyTo(it) } }
         val gpl = licenseDirectory.get().file("licenses/GPL-3.0.txt").asFile
         gpl.parentFile.mkdirs()
         rootProject.file("LICENSE").copyTo(gpl, overwrite = true)
@@ -46,7 +50,7 @@ android {
     kotlinOptions { jvmTarget = "17" }
     sourceSets.getByName("main").proto {
         srcDir(schemaDirectory)
-        exclude("nanopb.proto")
+        exclude("google/protobuf/descriptor.proto")
     }
     sourceSets.getByName("main").assets.srcDir(licenseDirectory)
 }
@@ -60,13 +64,13 @@ protobuf {
     generateProtoTasks {
         all().configureEach {
             dependsOn(prepareMeshtasticProtos)
-            builtins { maybeCreate("java").option("lite") }
+            builtins { maybeCreate("java") }
         }
     }
 }
 
 dependencies {
-    implementation("com.google.protobuf:protobuf-javalite:3.25.5")
+    implementation("com.google.protobuf:protobuf-java:3.25.5")
     testImplementation("junit:junit:4.13.2")
 }
 
