@@ -43,6 +43,13 @@ class MainActivity : Activity() {
     private lateinit var sendButton: Button
     private lateinit var channelSelector: Spinner
     private lateinit var channelAdapter: ArrayAdapter<String>
+    private lateinit var bitchatEndpoint: BitchatBleEndpoint
+    private lateinit var bitchatStatus: TextView
+    private lateinit var bitchatPeers: TextView
+    private lateinit var bitchatHistory: TextView
+    private lateinit var bitchatInput: EditText
+    private lateinit var bitchatSend: Button
+    private val bitchatMessages = linkedMapOf<String, Pair<BitchatPublicText, String>>()
     private var currentNode: MeshNode? = null
     private val messages = linkedMapOf<String, MeshText>()
     private val selectableDevices = arrayListOf<BluetoothDevice>()
@@ -94,7 +101,7 @@ class MainActivity : Activity() {
 
     private fun createInterface() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 24, 24, 12) }
-        root.addView(TextView(this).apply { text = "HybridBridge 0.4.1"; textSize = 22f })
+        root.addView(TextView(this).apply { text = "HybridBridge 0.5"; textSize = 22f })
         val navigation = RadioGroup(this).apply { orientation = RadioGroup.HORIZONTAL }
         val content = FrameLayout(this)
         root.addView(navigation)
@@ -146,12 +153,15 @@ class MainActivity : Activity() {
         val stateLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         nodeStatus = TextView(this).apply { text = "Aucun noeud synchronise"; textSize = 16f }
         stateLayout.addView(nodeStatus)
-        stateLayout.addView(TextView(this).apply { text = "Bitchat : non integre\nPont : desactive"; textSize = 16f })
+        stateLayout.addView(TextView(this).apply { text = "Pont : desactive"; textSize = 16f })
         stateLayout.addView(Button(this).apply {
             text = "Licences"
             setOnClickListener {
                 val text = assets.open("licenses/GPL-3.0.txt").bufferedReader().use { it.readText() } +
-                    "\n\nGoogle Protocol Buffers\n" + assets.open("licenses/Protobuf-License.txt").bufferedReader().use { it.readText() }
+                    "\n\nGoogle Protocol Buffers\n" + assets.open("licenses/Protobuf-License.txt").bufferedReader().use { it.readText() } +
+                    "\n\nBouncy Castle\n" + android.text.Html.fromHtml(
+                        assets.open("licenses/BouncyCastle-LICENSE.html").bufferedReader().use { it.readText() },
+                        android.text.Html.FROM_HTML_MODE_LEGACY).toString()
                 AlertDialog.Builder(this@MainActivity).setTitle("Licences").setMessage(text).setPositiveButton("Fermer", null).show()
             }
         })
@@ -160,8 +170,9 @@ class MainActivity : Activity() {
             sendButton.isEnabled = ready
             messageStatus.text = message
         }, { node -> updateNode(node) }, { message -> updateMessage(message) })
-        val screens = listOf(layout, messageLayout, stateLayout)
-        val labels = listOf("Appareils", "Messages", "Etat")
+        val bitchatLayout = createBitchatInterface()
+        val screens = listOf(layout, messageLayout, bitchatLayout, stateLayout)
+        val labels = listOf("Appareils", "Messages", "Bitchat", "Etat")
         val navigationIds = labels.map { android.view.View.generateViewId() }
         screens.forEachIndexed { index, screen ->
             screen.visibility = if (index == 0) android.view.View.VISIBLE else android.view.View.GONE
@@ -183,7 +194,7 @@ class MainActivity : Activity() {
     }
 
     private fun showStartupDiagnostic(error: RuntimeException) {
-        val details = "HybridBridge 0.4.1 - erreur de demarrage\nAndroid API ${Build.VERSION.SDK_INT}\n" +
+        val details = "HybridBridge 0.5 - erreur de demarrage\nAndroid API ${Build.VERSION.SDK_INT}\n" +
             error.javaClass.name + "\n" + error.stackTrace.take(8).joinToString("\n") {
                 "${it.className}.${it.methodName}:${it.lineNumber}"
             }
@@ -199,6 +210,60 @@ class MainActivity : Activity() {
             }
         })
         setContentView(fallback)
+    }
+
+    private fun createBitchatInterface(): LinearLayout {
+        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        bitchatStatus = TextView(this).apply { text = "Bitchat arrete"; textSize = 16f }
+        bitchatPeers = TextView(this).apply {
+            text = "Aucune annonce signee"
+            maxLines = 4
+            ellipsize = android.text.TextUtils.TruncateAt.END
+        }
+        bitchatHistory = TextView(this).apply { text = "Aucun message public"; textSize = 16f }
+        bitchatInput = EditText(this).apply {
+            hint = "Message public Bitchat"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            maxLines = 3
+        }
+        bitchatSend = Button(this).apply {
+            text = "Envoyer public"
+            isEnabled = false
+            setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_send, 0, 0, 0)
+            setOnClickListener {
+                val text = bitchatInput.text.toString()
+                AlertDialog.Builder(this@MainActivity).setTitle("Diffuser ce message public ?")
+                    .setMessage("Les clients Bitchat proches pourront recevoir et relayer ce texte.")
+                    .setNegativeButton("Annuler", null).setPositiveButton("Envoyer") { _, _ ->
+                        bitchatEndpoint.send(text).onSuccess { bitchatInput.text.clear() }
+                            .onFailure { bitchatStatus.text = it.message ?: "Envoi BLE impossible" }
+                    }.show()
+            }
+        }
+        bitchatEndpoint = BitchatBleEndpoint(this, { message, ready ->
+            bitchatStatus.text = message; bitchatSend.isEnabled = ready
+        }, { peers ->
+            bitchatPeers.text = if (peers.isEmpty()) "Aucune annonce signee" else peers.joinToString("\n") { "${it.name} (${it.id.take(8)})" }
+        }, { message, state ->
+            bitchatMessages[message.id] = message to state
+            if (bitchatMessages.size > 200) bitchatMessages.remove(bitchatMessages.keys.first())
+            bitchatHistory.text = bitchatMessages.values.joinToString("\n\n") { "${it.first.name}\n${it.first.text}\n${it.second}" }
+        })
+        layout.addView(bitchatStatus)
+        layout.addView(Button(this).apply { text = "Activer Bitchat BLE"; setOnClickListener { startBitchat() } })
+        layout.addView(Button(this).apply { text = "Arreter Bitchat BLE"; setOnClickListener { bitchatEndpoint.stop() } })
+        layout.addView(bitchatPeers)
+        layout.addView(ScrollView(this).apply { addView(bitchatHistory) }, LinearLayout.LayoutParams(-1, 0, 1f))
+        layout.addView(bitchatInput)
+        layout.addView(bitchatSend)
+        return layout
+    }
+
+    private fun startBitchat() {
+        val required = if (Build.VERSION.SDK_INT >= 31) arrayOf(Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT) else emptyArray()
+        val missing = required.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
+        if (missing.isNotEmpty()) { requestPermissions(missing.toTypedArray(), 101); return }
+        bitchatEndpoint.start()
     }
 
     private fun updateNode(node: MeshNode?) {
@@ -290,10 +355,18 @@ class MainActivity : Activity() {
         if (requestCode == 100) {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) requestAndScan()
             else status.text = "Permissions refusees : verifier les autorisations de HybridBridge"
+        } else if (requestCode == 101) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) startBitchat()
+            else bitchatStatus.text = "Permissions Bitchat BLE refusees"
         }
+    }
+    override fun onStop() {
+        if (::bitchatEndpoint.isInitialized) bitchatEndpoint.stop()
+        super.onStop()
     }
     override fun onDestroy() {
         stopScan()
+        if (::bitchatEndpoint.isInitialized) bitchatEndpoint.stop()
         if (::gattClient.isInitialized) gattClient.close()
         super.onDestroy()
     }
