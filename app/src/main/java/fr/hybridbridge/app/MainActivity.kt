@@ -2,6 +2,7 @@ package fr.hybridbridge.app
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
@@ -16,9 +17,13 @@ import android.os.ParcelUuid
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Spinner
+import android.widget.TabHost
+import android.widget.TabWidget
 import android.widget.TextView
 import android.widget.Toast
 
@@ -30,6 +35,15 @@ class MainActivity : Activity() {
     private lateinit var deviceSelector: Spinner
     private lateinit var deviceAdapter: ArrayAdapter<String>
     private lateinit var gattClient: MeshtasticGattClient
+    private lateinit var nodeStatus: TextView
+    private lateinit var messageStatus: TextView
+    private lateinit var messageHistory: TextView
+    private lateinit var messageInput: EditText
+    private lateinit var sendButton: Button
+    private lateinit var channelSelector: Spinner
+    private lateinit var channelAdapter: ArrayAdapter<String>
+    private var currentNode: MeshNode? = null
+    private val messages = linkedMapOf<String, MeshText>()
     private val selectableDevices = arrayListOf<BluetoothDevice>()
     private val serviceUuid = MeshtasticGattClient.SERVICE_UUID
     private val bluetooth by lazy { getSystemService(BluetoothManager::class.java).adapter }
@@ -70,8 +84,16 @@ class MainActivity : Activity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(32, 48, 32, 24) }
-        layout.addView(TextView(this).apply { text = "HybridBridge 0.3 — Meshtastic BLE"; textSize = 22f })
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 24, 24, 12) }
+        root.addView(TextView(this).apply { text = "HybridBridge 0.4"; textSize = 22f })
+        val tabHost = TabHost(this)
+        val tabLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        tabLayout.addView(TabWidget(this).apply { id = android.R.id.tabs })
+        tabLayout.addView(FrameLayout(this).apply { id = android.R.id.tabcontent }, LinearLayout.LayoutParams(-1, 0, 1f))
+        tabHost.addView(tabLayout, android.view.ViewGroup.LayoutParams(-1, -1))
+        root.addView(tabHost, LinearLayout.LayoutParams(-1, 0, 1f))
+        tabHost.setup()
+        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         status = TextView(this).apply { text = "Prêt à rechercher un Heltec"; textSize = 16f }
         results = TextView(this).apply { text = "Aucun appareil découvert"; textSize = 15f }
         layout.addView(status)
@@ -88,15 +110,92 @@ class MainActivity : Activity() {
         }
         layout.addView(deviceSelector)
         connectionStatus = TextView(this).apply { text = "Deconnecte"; textSize = 16f }
-        gattClient = MeshtasticGattClient(this) { message, verified ->
-            connectionStatus.text = message
-            connectionStatus.contentDescription = if (verified) "GATT verifie : $message" else message
-        }
         layout.addView(Button(this).apply { text = "Connecter"; setOnClickListener { connectSelectedDevice() } })
         layout.addView(Button(this).apply { text = "Deconnecter"; setOnClickListener { gattClient.disconnect() } })
         layout.addView(connectionStatus)
         layout.addView(ScrollView(this).apply { addView(results) }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
-        setContentView(layout)
+        val messageLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        channelAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayListOf<String>()).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        channelSelector = Spinner(this).apply { adapter = channelAdapter; contentDescription = "Canal Meshtastic" }
+        messageLayout.addView(channelSelector)
+        messageStatus = TextView(this).apply { text = "Non synchronise" }
+        messageLayout.addView(messageStatus)
+        messageHistory = TextView(this).apply { text = "Aucun message"; textSize = 16f }
+        messageLayout.addView(ScrollView(this).apply { addView(messageHistory) }, LinearLayout.LayoutParams(-1, 0, 1f))
+        messageInput = EditText(this).apply {
+            hint = "Message de canal"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            maxLines = 4
+        }
+        messageLayout.addView(messageInput)
+        sendButton = Button(this).apply {
+            text = "Envoyer"
+            isEnabled = false
+            setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_send, 0, 0, 0)
+            setOnClickListener { confirmSend() }
+        }
+        messageLayout.addView(sendButton)
+        val stateLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        nodeStatus = TextView(this).apply { text = "Aucun noeud synchronise"; textSize = 16f }
+        stateLayout.addView(nodeStatus)
+        stateLayout.addView(TextView(this).apply { text = "Bitchat : non integre\nPont : desactive"; textSize = 16f })
+        stateLayout.addView(Button(this).apply {
+            text = "Licences"
+            setOnClickListener {
+                val text = assets.open("licenses/GPL-3.0.txt").bufferedReader().use { it.readText() } +
+                    "\n\nGoogle Protocol Buffers\n" + assets.open("licenses/Protobuf-License.txt").bufferedReader().use { it.readText() }
+                AlertDialog.Builder(this@MainActivity).setTitle("Licences").setMessage(text).setPositiveButton("Fermer", null).show()
+            }
+        })
+        gattClient = MeshtasticGattClient(this, { message, ready ->
+            connectionStatus.text = message
+            sendButton.isEnabled = ready
+            messageStatus.text = message
+        }, { node -> updateNode(node) }, { message -> updateMessage(message) })
+        tabHost.addTab(tabHost.newTabSpec("devices").setIndicator("Appareils").setContent { layout })
+        tabHost.addTab(tabHost.newTabSpec("messages").setIndicator("Messages").setContent { messageLayout })
+        tabHost.addTab(tabHost.newTabSpec("state").setIndicator("Etat").setContent { stateLayout })
+        setContentView(root)
+    }
+
+    private fun updateNode(node: MeshNode?) {
+        val selectedIndex = currentNode?.channels?.getOrNull(channelSelector.selectedItemPosition)?.index
+        val changedChannels = currentNode?.channels != node?.channels
+        currentNode = node
+        if (changedChannels) {
+            channelAdapter.clear()
+            node?.channels?.forEach { channel -> channelAdapter.add("${channel.index} : ${channel.name}") }
+            val position = node?.channels?.indexOfFirst { it.index == selectedIndex } ?: -1
+            if (position >= 0) channelSelector.setSelection(position)
+        }
+        nodeStatus.text = if (node == null) "Aucun noeud synchronise" else
+            "${node.name}\n${MeshtasticProtocol.nodeLabel(node.number)}\nFirmware : ${node.firmware}\nBatterie : ${node.battery?.let { "$it %" } ?: "indisponible"}\nCanaux actifs : ${node.channels.size}"
+        if (node == null) sendButton.isEnabled = false
+    }
+
+    private fun updateMessage(message: MeshText) {
+        messages["${message.sender}:${message.id}"] = message
+        if (messages.size > 300) messages.remove(messages.keys.first())
+        messageHistory.text = messages.values.joinToString("\n\n") {
+            val sender = if (it.outgoing) "Moi" else MeshtasticProtocol.nodeLabel(it.sender)
+            "$sender • canal ${it.channel}\n${it.text}\n${it.state}"
+        }
+    }
+
+    private fun confirmSend() {
+        val channel = currentNode?.channels?.getOrNull(channelSelector.selectedItemPosition) ?: return
+        val text = messageInput.text.toString()
+        AlertDialog.Builder(this)
+            .setTitle("Envoyer sur ${channel.name} ?")
+            .setMessage("Ce message sera diffuse sur le canal Meshtastic ${channel.index}.")
+            .setNegativeButton("Annuler", null)
+            .setPositiveButton("Envoyer") { _, _ ->
+                gattClient.sendChannelMessage(channel.index, text)
+                    .onSuccess { messageInput.text.clear() }
+                    .onFailure { messageStatus.text = it.message ?: "Envoi impossible" }
+            }.show()
     }
     private fun requestAndScan() {
         val required = if (Build.VERSION.SDK_INT >= 31) arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
