@@ -24,6 +24,24 @@ jobs:
           gradle-version: '8.10.2'
       - name: Test and build debug APK
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
+      - name: Verify tests and APK licenses
+        shell: pwsh
+        run: |
+          $tests = 0; $failures = 0; $errors = 0
+          Get-ChildItem 'app/build/test-results/testDebugUnitTest/*.xml' | ForEach-Object {
+            [xml]$report = Get-Content $_.FullName -Raw
+            $tests += [int]$report.testsuite.tests
+            $failures += [int]$report.testsuite.failures
+            $errors += [int]$report.testsuite.errors
+          }
+          if ($tests -lt 14 -or $failures -ne 0 -or $errors -ne 0) { throw "Tests invalides : $tests tests, $failures echecs, $errors erreurs" }
+          $apk = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path 'app/build/outputs/apk/debug/app-debug.apk'))
+          try {
+            foreach ($path in @('assets/licenses/GPL-3.0.txt', 'assets/licenses/Protobuf-License.txt')) {
+              if ($null -eq $apk.GetEntry($path)) { throw "Licence absente : $path" }
+            }
+          } finally { $apk.Dispose() }
+          Write-Output "$tests tests, $failures failures, $errors errors ; APK licenses verified"
       - uses: actions/upload-artifact@v4
         with:
           name: HybridBridge-0.4-debug-apk
