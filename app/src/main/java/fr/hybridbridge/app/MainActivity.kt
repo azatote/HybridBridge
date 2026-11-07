@@ -15,6 +15,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
+import android.os.SystemClock
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
@@ -49,6 +50,18 @@ class MainActivity : Activity() {
     private lateinit var bitchatHistory: TextView
     private lateinit var bitchatInput: EditText
     private lateinit var bitchatSend: Button
+    private lateinit var publicBridge: PublicBridge
+    private lateinit var bridgeStatus: TextView
+    private lateinit var bridgeToggle: CheckBox
+    private val bridgeTick = object : Runnable {
+        override fun run() {
+            if (::publicBridge.isInitialized && publicBridge.enabled) {
+                publicBridge.drain()
+                updateBridgeStatus()
+                handler.postDelayed(this, 1_000)
+            }
+        }
+    }
     private val bitchatMessages = linkedMapOf<String, Pair<BitchatPublicText, String>>()
     private var currentNode: MeshNode? = null
     private val messages = linkedMapOf<String, MeshText>()
@@ -101,7 +114,7 @@ class MainActivity : Activity() {
 
     private fun createInterface() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 24, 24, 12) }
-        root.addView(TextView(this).apply { text = "HybridBridge 0.5"; textSize = 22f })
+        root.addView(TextView(this).apply { text = "HybridBridge 0.6"; textSize = 22f })
         val navigation = RadioGroup(this).apply { orientation = RadioGroup.HORIZONTAL }
         val content = FrameLayout(this)
         root.addView(navigation)
@@ -153,7 +166,13 @@ class MainActivity : Activity() {
         val stateLayout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         nodeStatus = TextView(this).apply { text = "Aucun noeud synchronise"; textSize = 16f }
         stateLayout.addView(nodeStatus)
-        stateLayout.addView(TextView(this).apply { text = "Pont : desactive"; textSize = 16f })
+        bridgeStatus = TextView(this).apply { text = "Pont : desactive"; textSize = 16f }
+        bridgeToggle = CheckBox(this).apply {
+            text = "Relayer /hb du canal choisi vers Bitchat public"
+            setOnCheckedChangeListener { _, checked -> if (checked) confirmBridge() else stopBridge() }
+        }
+        stateLayout.addView(bridgeToggle)
+        stateLayout.addView(bridgeStatus)
         stateLayout.addView(Button(this).apply {
             text = "Licences"
             setOnClickListener {
@@ -171,6 +190,11 @@ class MainActivity : Activity() {
             messageStatus.text = message
         }, { node -> updateNode(node) }, { message -> updateMessage(message) })
         val bitchatLayout = createBitchatInterface()
+        val bridgePreferences = getSharedPreferences("bridge-dedup", MODE_PRIVATE)
+        publicBridge = PublicBridge({ text -> bitchatEndpoint.send(text) }, SystemClock::elapsedRealtime,
+            bridgePreferences.getStringSet("seen", emptySet()).orEmpty().toSet()) { seen ->
+            check(bridgePreferences.edit().putStringSet("seen", seen.toSet()).commit()) { "Persistence refusee" }
+        }
         val screens = listOf(layout, messageLayout, bitchatLayout, stateLayout)
         val labels = listOf("Appareils", "Messages", "Bitchat", "Etat")
         val navigationIds = labels.map { android.view.View.generateViewId() }
@@ -194,7 +218,7 @@ class MainActivity : Activity() {
     }
 
     private fun showStartupDiagnostic(error: RuntimeException) {
-        val details = "HybridBridge 0.5 - erreur de demarrage\nAndroid API ${Build.VERSION.SDK_INT}\n" +
+        val details = "HybridBridge 0.6 - erreur de demarrage\nAndroid API ${Build.VERSION.SDK_INT}\n" +
             error.javaClass.name + "\n" + error.stackTrace.take(8).joinToString("\n") {
                 "${it.className}.${it.methodName}:${it.lineNumber}"
             }
@@ -210,6 +234,45 @@ class MainActivity : Activity() {
             }
         })
         setContentView(fallback)
+    }
+
+    private fun confirmBridge() {
+        val node = currentNode
+        val channel = node?.channels?.getOrNull(channelSelector.selectedItemPosition)
+        if (node == null || channel == null || !sendButton.isEnabled) {
+            bridgeToggle.isChecked = false
+            bridgeStatus.text = "Synchroniser le Heltec et choisir le canal dans Messages"
+            return
+        }
+        AlertDialog.Builder(this).setTitle("Autoriser le relais public du canal ${channel.index} ?")
+            .setMessage("Seuls les textes commencant par /hb seront publies sur Bitchat BLE, avec leur identifiant d'origine. Utiliser un canal de test dedie avec l'accord des auteurs. Aucune communication privee ne doit y etre transferee.")
+            .setNegativeButton("Annuler") { _, _ -> bridgeToggle.isChecked = false }
+            .setOnCancelListener { bridgeToggle.isChecked = false }
+            .setPositiveButton("Autoriser") { _, _ ->
+                val active = currentNode
+                if (active == null || active.number != node.number || !sendButton.isEnabled || active.channels.none { it.index == channel.index }) {
+                    bridgeToggle.isChecked = false
+                    bridgeStatus.text = "Connexion ou canal change ; reautoriser le pont"
+                } else {
+                    publicBridge.enable(channel.index, node.number)
+                    handler.removeCallbacks(bridgeTick)
+                    handler.post(bridgeTick)
+                    updateBridgeStatus()
+                }
+            }.show()
+    }
+
+    private fun stopBridge() {
+        handler.removeCallbacks(bridgeTick)
+        if (::publicBridge.isInitialized) publicBridge.disable()
+        if (::bridgeToggle.isInitialized && bridgeToggle.isChecked) bridgeToggle.isChecked = false
+        if (::bridgeStatus.isInitialized) updateBridgeStatus()
+    }
+
+    private fun updateBridgeStatus() {
+        if (!::publicBridge.isInitialized) { bridgeStatus.text = "Pont : desactive"; return }
+        bridgeStatus.text = "Pont ${if (publicBridge.enabled) "active" else "desactive"}\n" +
+            "File : ${publicBridge.pendingCount} ; remis BLE : ${publicBridge.forwarded} ; rejetes : ${publicBridge.rejected}\n${publicBridge.lastEvent}"
     }
 
     private fun createBitchatInterface(): LinearLayout {
@@ -251,7 +314,7 @@ class MainActivity : Activity() {
         })
         layout.addView(bitchatStatus)
         layout.addView(Button(this).apply { text = "Activer Bitchat BLE"; setOnClickListener { startBitchat() } })
-        layout.addView(Button(this).apply { text = "Arreter Bitchat BLE"; setOnClickListener { bitchatEndpoint.stop() } })
+        layout.addView(Button(this).apply { text = "Arreter Bitchat BLE"; setOnClickListener { stopBridge(); bitchatEndpoint.stop() } })
         layout.addView(bitchatPeers)
         layout.addView(ScrollView(this).apply { addView(bitchatHistory) }, LinearLayout.LayoutParams(-1, 0, 1f))
         layout.addView(bitchatInput)
@@ -267,6 +330,7 @@ class MainActivity : Activity() {
     }
 
     private fun updateNode(node: MeshNode?) {
+        if (node == null || currentNode?.number != node.number || currentNode?.channels != node.channels) stopBridge()
         val selectedIndex = currentNode?.channels?.getOrNull(channelSelector.selectedItemPosition)?.index
         val changedChannels = currentNode?.channels != node?.channels
         currentNode = node
@@ -287,6 +351,10 @@ class MainActivity : Activity() {
         messageHistory.text = messages.values.joinToString("\n\n") {
             val sender = if (it.outgoing) "Moi" else MeshtasticProtocol.nodeLabel(it.sender)
             "$sender • canal ${it.channel}\n${it.text}\n${it.state}"
+        }
+        if (::publicBridge.isInitialized) {
+            publicBridge.receive(message)
+            updateBridgeStatus()
         }
     }
 
@@ -361,10 +429,12 @@ class MainActivity : Activity() {
         }
     }
     override fun onStop() {
+        stopBridge()
         if (::bitchatEndpoint.isInitialized) bitchatEndpoint.stop()
         super.onStop()
     }
     override fun onDestroy() {
+        stopBridge()
         stopScan()
         if (::bitchatEndpoint.isInitialized) bitchatEndpoint.stop()
         if (::gattClient.isInitialized) gattClient.close()
