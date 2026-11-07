@@ -22,10 +22,10 @@ class MainActivityTest {
                 .getChildAt(0) as android.widget.LinearLayout
             val navigation = appRoot.getChildAt(1) as android.widget.RadioGroup
             val content = appRoot.getChildAt(2) as android.widget.FrameLayout
-            assertEquals(3, navigation.childCount)
+            assertEquals(4, navigation.childCount)
             val bitmap = android.graphics.Bitmap.createBitmap(1080, 1920, android.graphics.Bitmap.Config.ARGB_8888)
             try {
-                for (index in 0 until 3) {
+                for (index in 0 until 4) {
                     navigation.check(navigation.getChildAt(index).id)
                     root.measure(
                         android.view.View.MeasureSpec.makeMeasureSpec(1080, android.view.View.MeasureSpec.EXACTLY),
@@ -34,7 +34,7 @@ class MainActivityTest {
                     root.layout(0, 0, 1080, 1920)
                     root.draw(android.graphics.Canvas(bitmap))
                     assertEquals(android.view.View.VISIBLE, content.getChildAt(index).visibility)
-                    for (otherIndex in 0 until 3) {
+                    for (otherIndex in 0 until 4) {
                         if (otherIndex != index) assertEquals(android.view.View.GONE, content.getChildAt(otherIndex).visibility)
                     }
                 }
