@@ -814,8 +814,10 @@ Une fonctionnalité n'est considérée comme terminée que si :
 - La CI [42365776287](https://github.com/azatote/HybridBridge/actions/runs/42365776287)
     a réussi les tests, la compilation et le contrôle des licences de l'APK 0.4
     le 7 novembre 2026. Licence GPLv3 et sources publiques approuvées par l'utilisateur.
-- L'utilisateur a rapporté la découverte du Heltec après une longue attente
-    avec l'APK précédent. Les tests de synchronisation et d'échanges 0.4 restent à réaliser.
+- L'utilisateur confirme l'ouverture sans crash, le Bluetooth, la synchronisation
+    et les échanges Meshtastic aller-retour avec la 0.4.1 sur son installation.
+- Le codec officiel Bitchat Android 2.2.0 est extrait sans modification et testé
+    en CI ; le moteur BLE et les échanges avec un client officiel ne sont pas livrés.
 - Le dépôt GitHub de l'utilisateur est nommé « Pont hybride » dans son interface ; son chemin visible dans la capture était `azatote/HybridBridge`. Vérifier le dépôt local réellement ouvert avant de modifier quoi que ce soit.
 
 ### Ce qui n'est pas encore validé
@@ -827,7 +829,7 @@ Une fonctionnalité n'est considérée comme terminée que si :
 - Passerelle publique fonctionnelle.
 - Chiffrement privé HybridBridge.
 - Transport opaque de conversations privées Bitchat.
-- APK 0.4 installé, synchronisation et messages testés sur le matériel.
+- Compatibilité Bitchat et matrice matérielle complète Android/Meshtastic.
 
 **Ne pas cocher une fonctionnalité comme livrée sans preuve.**
 

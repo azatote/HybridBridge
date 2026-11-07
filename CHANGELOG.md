@@ -18,7 +18,8 @@ Les entrees ci-dessous retracent uniquement les faits observes dans cette sessio
 - Extraction de six fichiers officiels inchangees au build, dependances fermees
   sur Android/Java/Parcelize ; aucun faux moteur BLE ni protocole maison.
 - Fichiers : `app/build.gradle.kts`, nouveau `BitchatProtocolTest.kt`, workflow,
-  audit amont, decisions, README et ce journal. Cinq tests de codec ajoutes, seuil CI passe a 21.
+  audit amont, decisions, README, cahier des charges et ce journal.
+  Cinq tests de codec ajoutes, seuil CI passe a 21.
 - Sources GPL Bitchat et licence amont incluses dans l'archive de sources correspondantes.
 - CI [42371877884](https://github.com/azatote/HybridBridge/actions/runs/42371877884),
   commit 04a216ba60057cb02ae51db85b186c058553b0f5 : `completed / success`.
