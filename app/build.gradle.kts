@@ -1,4 +1,5 @@
 import com.google.protobuf.gradle.*
+import java.net.URI
 
 plugins {
     id("com.android.application")
@@ -25,14 +26,14 @@ val prepareMeshtasticProtos by tasks.registering {
         for (path in schemas) {
             val target = schemaDirectory.get().file(path).asFile
             target.parentFile.mkdirs()
-            java.net.URI("https://raw.githubusercontent.com/meshtastic/protobufs/$revision/$path")
+            URI("https://raw.githubusercontent.com/meshtastic/protobufs/$revision/$path")
                 .toURL().openStream().use { source -> target.outputStream().use { source.copyTo(it) } }
         }
         val gpl = licenseDirectory.get().file("licenses/GPL-3.0.txt").asFile
         gpl.parentFile.mkdirs()
         rootProject.file("LICENSE").copyTo(gpl, overwrite = true)
         val protobufLicense = licenseDirectory.get().file("licenses/Protobuf-License.txt").asFile
-        java.net.URI("https://raw.githubusercontent.com/protocolbuffers/protobuf/v25.5/LICENSE")
+        URI("https://raw.githubusercontent.com/protocolbuffers/protobuf/v25.5/LICENSE")
             .toURL().openStream().use { source -> protobufLicense.outputStream().use { source.copyTo(it) } }
     }
 }
@@ -43,8 +44,10 @@ android {
     defaultConfig { applicationId = "fr.hybridbridge.app"; minSdk = 26; targetSdk = 35; versionCode = 4; versionName = "0.4" }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
-    sourceSets.getByName("main").proto.srcDir(schemaDirectory)
-    sourceSets.getByName("main").proto.exclude("nanopb.proto")
+    sourceSets.getByName("main").proto {
+        srcDir(schemaDirectory)
+        exclude("nanopb.proto")
+    }
     sourceSets.getByName("main").assets.srcDir(licenseDirectory)
 }
 
@@ -57,7 +60,7 @@ protobuf {
     generateProtoTasks {
         all().configureEach {
             dependsOn(prepareMeshtasticProtos)
-            builtins { create("java") { option("lite") } }
+            builtins { maybeCreate("java").option("lite") }
         }
     }
 }
