@@ -26,6 +26,24 @@ jobs:
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: HybridBridge-0.3-debug-apk
+          name: HybridBridge-0.4-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: HybridBridge-0.4-test-results
+          path: app/build/test-results/testDebugUnitTest/*.xml
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HybridBridge-0.4-corresponding-source
+          path: |
+            app/src/
+            app/build.gradle.kts
+            app/build/meshtastic-protos/
+            build.gradle.kts
+            settings.gradle.kts
+            gradle.properties
+            LICENSE
+            docs/
