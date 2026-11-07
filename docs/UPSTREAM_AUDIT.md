@@ -43,8 +43,35 @@
   radio ni reception par un correspondant.
 - Historique en memoire borne a 300 messages, deduplication a 512 identifiants,
   file d'envoi bornee a 16 operations ; pas de persistance des messages.
-- La validation physique des echanges est encore attendue. Bitchat, routage
-  inter-reseaux, E2EE, reprise durable et service de fond restent non livres.
+- L'utilisateur confirme les echanges Meshtastic aller-retour sur son installation
+  avec la 0.4.1. Bitchat, routage inter-reseaux, E2EE, reprise durable et service
+  de fond restent non livres.
+
+## Debut de l'audit Bitchat BLE
+
+- Release stable retenue : v2.2.0, publiee le 28 octobre 2026, commit
+  `20501fdfe0d56c7705c377d4a263b01d8f38eeeb`.
+- Socle compile depuis six sources officielles inchangees : BinaryProtocol,
+  CompressionUtil, DecompressionResourcePool, MessagePadding, PacketPayloadLimits
+  et AppConstants. Kotlin Parcelize active pour le modele Parcelable officiel.
+- Sources telechargees au build depuis le commit epingle, licence amont conservee
+  et archive des sources correspondantes etendue a ces fichiers.
+- Tests : aller-retour binaire, en-tete/payload tronques, paquet vide,
+  conservation de la representation recue apres decompression/reencodage.
+  Ces tests locaux ne prouvent pas un echange avec un client officiel.
+- CI de ce socle : [42371877884](https://github.com/azatote/HybridBridge/actions/runs/42371877884),
+  compilation et tests reussis ; au moins 21 tests sans echec/erreur verifies.
+- Aucun demarrage du moteur Bitchat ni emission BLE ajoute dans cette etape.
+  Le numero et le lien de l'APK de test materiel restent 0.4.1 ; pas de nouvelle
+  version a installer tant que l'adaptateur BLE Bitchat n'est pas raccorde.
+- Revision officielle inspectee : `2fc6f4747275bdbfec2288ac1a45f7d5bedcd9ac`
+  du depot permissionlesstech/bitchat-android ; licence declaree GPL-3.0.
+- BluetoothMeshService expose startServices/stopServices/sendMessage et depend
+  de ses composants mesh, EncryptionService, Noise, GossipSync et services de routage.
+- L'interface MeshService n'est pas a elle seule un SDK autonome : ses signatures
+  referencent les modeles et etats de sessions internes.
+- L'extraction doit conserver les contrats d'identite, d'annonce, de paquets
+  et de securite. Une detection BLE seule ne valide pas la participation au mesh.
 
 ## Reference verifiee le 7 novembre 2026
 

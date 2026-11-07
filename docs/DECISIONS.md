@@ -21,9 +21,14 @@ pas par une hypothese sur les signatures des classes generees.
 ## 2026-11-07 - Jalon de validation avant le pont
 
 La 0.4 prepare les messages de canal Meshtastic. Elle n'est pas l'application
-finale du cahier des charges. Les echanges sur deux noeuds, Bitchat officiel,
+finale du cahier des charges. Le retour utilisateur valide les echanges
+Meshtastic aller-retour avec la 0.4.1 sur son installation. Bitchat officiel,
 le pont bidirectionnel, l'E2EE, la persistance et le relais de fond ne sont
 pas valides ni annonces comme livres. Aucun ecran simule de reseau connecte.
+
+Le premier socle Bitchat reutilise le codec officiel v2.2.0 sans modification,
+depuis son commit epingle. Il doit rester separe du transport et des sessions
+tant que le moteur BLE n'est pas raccorde et teste sur un client officiel.
 
 Le transport des messages est limite aux canaux actifs selectionnes et
 aux broadcasts texte. Aucun message direct ou opaque ne doit etre exporte
