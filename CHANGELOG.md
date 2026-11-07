@@ -11,6 +11,33 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-07 - Version 0.6 : pont public Heltec vers Bitchat
+
+- Ajout de PublicBridge et neuf tests de politique/parcours logiciel : canal
+  autorise, prefixe /hb, rejet des prives, origine attribuee, deduplication,
+  quota, expiration et arret. Le test de parcours est simule, pas radio.
+- Relais Meshtastic -> Bitchat seulement, desactive par defaut, avec
+  confirmation de publication et accord des auteurs sur un canal de test dedie.
+- File 8 messages en RAM, 30 secondes d'expiration, remise BLE limitee a une
+  tentative toutes les 5 secondes ; attribution et texte <=120 octets UTF-8.
+- Cache persistant de 512 IDs sans contenu ; sauvegarde app declaree desactivee.
+  Arret hors premier plan, a la deconnexion/changement du noeud ou des canaux.
+- Controle CI des permissions de l'APK (BLE/localisation ancienne uniquement),
+  apksigner verify, licences, tests et checksum SHA-256. Pas de certification
+  Play Protect ni de garantie absolue d'absence d'alerte antivirus.
+- Fichiers : nouveaux PublicBridge/PublicBridgeTest et SECURITY.md ;
+  MainActivity, manifeste, Gradle app, workflow, README, audit, decisions,
+  cahier des charges et ce journal. VersionCode 7, versionName 0.6.
+- CI [42393495373](https://github.com/azatote/HybridBridge/actions/runs/42393495373),
+  commit 0e18e25d47ace8bf60b29745aaeb1ea7e5989fa6 : `completed / success`.
+  Au moins 37 tests sans erreur, compilation, licences, permissions empaquetees
+  autorisees et apksigner verify reussis ; checksum SHA-256 publie.
+  APK 13583045207 (5943595 octets), tests 13582930488, sources 13582144882,
+  controles securite 13583125010 ; expiration annoncee le 5 fevrier 2027.
+- Aucun nouveau droit sensible injustifie, lecture d'application tierce,
+  firmware modifie, prive Noise/E2EE ou relais inverse ajoute.
+- Tests physiques de la chaine et signature release stable encore a realiser.
+
 ## 2026-11-07 - Version 0.5 : endpoint Bitchat BLE public de test
 
 - Serveur GATT et annonce sous les UUID officiels Bitchat 2.2.0 ; le client

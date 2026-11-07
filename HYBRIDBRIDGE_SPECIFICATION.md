@@ -821,7 +821,16 @@ Une fonctionnalité n'est considérée comme terminée que si :
     La CI [42387811211](https://github.com/azatote/HybridBridge/actions/runs/42387811211)
     est verte : tests, quatre vues Android 14/15 simulées et licences vérifiés.
     L'interopérabilité sur les téléphones reste à tester. Ce n'est pas un moteur
-    mesh complet ; privés Noise et pont LoRa ne sont pas livrés.
+    mesh complet ; les privés Noise ne sont pas livrés.
+- La 0.6 implémente le relais public unidirectionnel Heltec -> LoRa -> Heltec
+    -> HybridBridge -> Bitchat, sur canal autorisé et textes préfixés /hb,
+    désactivé par défaut, avec attribution, déduplication, quotas et expiration.
+    La CI [42393495373](https://github.com/azatote/HybridBridge/actions/runs/42393495373)
+    est verte : tests, permissions, signature APK et licences vérifiés.
+    Le parcours physique complet reste à valider ; aucun privé ni pont inverse.
+- Ces contrôles ne certifient pas Play Protect et ne garantissent pas l'absence
+    d'alerte Android. Ne pas contourner les protections ; une signature release
+    stable et un canal de distribution reconnu restent nécessaires avant diffusion finale.
 - Le dépôt GitHub de l'utilisateur est nommé « Pont hybride » dans son interface ; son chemin visible dans la capture était `azatote/HybridBridge`. Vérifier le dépôt local réellement ouvert avant de modifier quoi que ce soit.
 
 ### Ce qui n'est pas encore validé

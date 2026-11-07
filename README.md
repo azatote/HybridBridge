@@ -1,16 +1,18 @@
-# HybridBridge 0.5 — test Bitchat BLE public
+# HybridBridge 0.6 — pont public Heltec vers Bitchat
 
-**[Télécharger l'APK Android 0.5 de test (ZIP)](https://github.com/azatote/HybridBridge/actions/runs/42387811211/artifacts/13580083731)**
+**[Télécharger l'APK Android 0.6 de test (ZIP)](https://github.com/azatote/HybridBridge/actions/runs/42393495373/artifacts/13583045207)**
 
-[Sources correspondantes au build](https://github.com/azatote/HybridBridge/actions/runs/42387811211/artifacts/13580049074)
-et [rapports de tests](https://github.com/azatote/HybridBridge/actions/runs/42387811211/artifacts/13580585698).
+[Sources correspondantes au build](https://github.com/azatote/HybridBridge/actions/runs/42393495373/artifacts/13582144882),
+[rapports de tests](https://github.com/azatote/HybridBridge/actions/runs/42393495373/artifacts/13582930488)
+et [contrôles de permissions, signature et SHA-256](https://github.com/azatote/HybridBridge/actions/runs/42393495373/artifacts/13583125010).
 
 Connexion GitHub requise. Extraire le ZIP puis installer `app-debug.apk`.
 Build debug pour test uniquement ; lien valable jusqu'au 5 février 2027,
 sauf suppression anticipée de l'artefact.
 
 Application Android Kotlin native pour **synchroniser un Heltec et tester les messages de canal Meshtastic**, sans flasher les appareils.
-Version de développement : le pont Bitchat et le chiffrement privé ne sont pas encore livrés.
+Version de développement : le pont public unidirectionnel est implémenté,
+mais sa validation complète sur les appareils reste à réaliser. Privés et sens inverse non livrés.
 
 La 0.4 a été signalée comme se fermant au démarrage sur un Samsung Android 14.
 La 0.4.1 remplace les anciens onglets et ajoute un diagnostic d'erreur pendant
@@ -32,14 +34,15 @@ moteur mesh complet : pas de sessions privées Noise, de fragmentation ou de rel
 - La vérification d'une annonce auto-signée ne prouve ni une session Noise authentifiée ni l'identité humaine du pair. Les clés des pairs sont mémorisées pour la session, pas vérifiées par un échange humain.
 - Messages directs et opaques rejetés ; aucun relais inter-réseaux. Envois limités à 180 octets UTF-8, à la MTU négociée et à un message toutes les 15 secondes.
 - Bitchat public de test : 120 octets UTF-8 par envoi, 2 secondes entre envois, MTU suffisante requise. Le mode BLE s'arrête lorsque l'application quitte le premier plan.
-- Non inclus : moteur Bitchat complet, privés Noise, pont, E2EE natif, historique persistant, reconnexion automatique, service de fond et signature release.
+- Pont : désactivé par défaut, canal explicitement autorisé, préfixe `/hb` suivi d'un espace obligatoire, attribution d'origine et doublons filtrés. File de 8 messages, expiration 30 secondes, remise BLE limitée à une tentative toutes les 5 secondes.
+- Non inclus : moteur Bitchat complet, privés Noise, pont inverse Bitchat vers LoRa, E2EE natif, historique persistant, reconnexion automatique, service de fond et signature release stable.
 - `Transmis au Heltec` signifie écriture GATT réussie, pas réception radio ou lecture par un correspondant.
 - `Notifie au client BLE` signifie fin de l'opération de notification, pas affichage confirmé dans Bitchat officiel.
 - Cette étape est volontairement limitée et vérifiable. Ne pas la présenter comme une passerelle fonctionnelle.
 
 ## Test Sur Téléphone
 
-1. Installer l'APK 0.5. Vérifier d'abord l'ouverture et les vues Appareils, Messages, Bitchat et Etat, sans connecter le Heltec. Si un écran d'erreur apparaît, utiliser Partager le diagnostic. Si Android refuse la mise à jour pour signature différente, désinstaller l'ancien APK de test puis installer le nouveau ; les données locales de l'ancien seront perdues.
+1. Installer l'APK 0.6. Vérifier d'abord l'ouverture et les vues Appareils, Messages, Bitchat et Etat, sans connecter le Heltec. Si un écran d'erreur apparaît, utiliser Partager le diagnostic. Si Android refuse la mise à jour pour signature différente, désinstaller l'ancien APK de test puis installer le nouveau ; les données locales de l'ancien seront perdues.
 2. Allumer le Heltec, activer son Bluetooth et déconnecter Meshtastic officiel de ce nœud.
 3. Accorder les permissions Appareils à proximité sur Android 12+ ; sur Android 8 à 11, autoriser la localisation et activer sa fonction système.
 4. Garder HybridBridge au premier plan, rechercher et sélectionner le Heltec dans la liste. Utiliser le mode diagnostic si nécessaire ; un appareil BLE non identifié peut être rejeté après connexion.
@@ -54,13 +57,47 @@ la demande Android et reconnecter. L'historique n'est pas sauvegardé après fer
 
 ## Test Bitchat Public
 
-1. Téléphone A : HybridBridge 0.5. Téléphone B : Bitchat officiel 2.2.0, déjà installé. Aucun Heltec n'est nécessaire pour ce test BLE.
+1. Téléphone A : HybridBridge 0.6. Téléphone B : Bitchat officiel 2.2.0, déjà installé. Aucun Heltec n'est nécessaire pour ce test BLE.
 2. Activer le Bluetooth, autoriser les permissions et garder les deux applications au premier plan, à proximité. Utiliser la conversation publique du mesh BLE, pas un privé ni un canal Internet.
 3. Dans HybridBridge, ouvrir Bitchat et appuyer sur Activer Bitchat BLE. Autoriser l'annonce Bluetooth si Android le demande.
 4. Attendre la liaison et les annonces signées ; chercher HybridBridge parmi les pairs du client officiel. Si aucune liaison n'apparaît, noter le statut exact et vérifier le mode BLE et les permissions du client officiel.
 5. Envoyer un texte public court depuis Bitchat officiel vers HybridBridge, puis depuis HybridBridge vers Bitchat officiel. Confirmer chaque émission et vérifier l'affichage réel de chaque côté, pas seulement le statut de notification.
 6. Tester Arreter Bitchat BLE. Après retour d'arrière-plan, réactiver explicitement le mode de test.
 7. Relever version exacte de Bitchat, Android, compteurs de liaisons/annonces et erreurs. Aucun privé, fichier, relais automatique ni transfert vers LoRa n'est pris en charge par cet endpoint.
+
+## Test Du Parcours Complet
+
+```text
+Heltec émetteur -- LoRa --> Heltec récepteur
+Heltec récepteur -- BLE --> Téléphone HybridBridge -- BLE public --> Téléphone Bitchat
+```
+
+1. Conserver Meshtastic 2.7.x sur les deux Heltec, sans flashage. Vérifier région radio et canal/clé compatibles. Utiliser un canal de test dédié et obtenir l'accord des participants pour une publication publique Bitchat.
+2. Sur le téléphone passerelle, connecter HybridBridge au **Heltec récepteur**, attendre Meshtastic synchronise et choisir ce canal dans Messages.
+3. Activer Bitchat BLE dans HybridBridge. Sur l'autre téléphone, ouvrir Bitchat officiel en conversation publique BLE. Vérifier d'abord le test public direct ci-dessus et garder les applications au premier plan.
+4. Dans Etat, cocher Relayer /hb du canal choisi vers Bitchat public, puis confirmer l'autorisation. Le canal autorisé est celui choisi au moment de cette confirmation.
+5. Émettre depuis le Heltec source un texte court comme `/hb Bonjour depuis LoRa` sur ce canal, via un client Meshtastic autorisé ou son interface supportée. Ce n'est pas un message saisi dans la vue Messages de la passerelle : les émissions de son propre nœud ne sont pas relayées.
+6. Si le téléphone Bitchat sert également à envoyer via Meshtastic officiel sur le Heltec source, revenir rapidement dans Bitchat public ; l'attente du relais est limitée à 30 secondes. Une émission via un client séparé évite cette alternance.
+7. Vérifier le texte dans HybridBridge puis dans Bitchat officiel, attribué sous la forme `[HB !origine:id] Bonjour depuis LoRa`. L'origine est rapportée par Meshtastic, pas authentifiée de bout en bout.
+8. Dans Etat, contrôler les compteurs, la file et les rejets. Remis à la file BLE ne prouve pas une réception distante ; constater l'affichage réel côté Bitchat.
+9. Désactiver le pont, envoyer un nouveau texte `/hb` et vérifier qu'il n'est pas transféré. Un message sans préfixe doit aussi rester local. Arrêt immédiat en quittant l'application ou en déconnectant/changeant le nœud ; réautorisation explicite nécessaire.
+
+Le texte complet avec attribution doit tenir dans 120 octets UTF-8. Les messages
+trop longs, privés, doublons, réinjectés avec marque HB ou expirés ne sont pas relayés.
+Aucune émission automatique Bitchat vers LoRa n'est ajoutée.
+
+## Sécurité Et Installation
+
+Permissions empaquetées contrôlées en CI : BLE et localisation ancienne seulement,
+sans Internet, SMS, contacts, microphone, caméra ou accessibilité. Signature APK,
+licences et checksum publiés ; sauvegarde de l'application déclarée désactivée.
+
+Cela ne garantit pas qu'Android, Play Protect ou Samsung n'affichera aucune alerte.
+Cet APK **debug** est destiné au test et n'est pas une release certifiée. Ne pas
+désactiver les protections pour contourner un signalement dangereux : relever
+son libellé et suspendre l'installation pour analyse. La distribution finale
+nécessite une signature release stable et un canal reconnu.
+Voir [SECURITY.md](docs/SECURITY.md) pour les contrôles et limites.
 
 ## Compatibilité
 
@@ -80,14 +117,15 @@ Voir [l'audit amont](docs/UPSTREAM_AUDIT.md).
 ## Suite
 
 Les messages Meshtastic aller-retour sont confirmés sur l'installation de test.
-Valider maintenant le public Bitchat sur les deux téléphones. Le mesh complet,
-le pont public avec anti-boucles, les privés, la persistance, Compose, le fond
-et la release exigent encore leurs implémentations et validations.
+Valider maintenant le public Bitchat et le pont unidirectionnel sur les quatre
+appareils. Le mesh complet, le sens inverse, les privés, l'historique persistant,
+Compose, le fond et la release exigent encore leurs implémentations et validations.
 
 ## Prudence
 
 Aucune écriture en mémoire flash ni modification de firmware. Les messages
-confirmés par l'utilisateur peuvent émettre sur LoRa via le Heltec. Aucun relais automatique.
+confirmés par l'utilisateur peuvent émettre sur LoRa via le Heltec. Le pont
+autorisé relaie seulement les textes `/hb` du canal choisi vers Bitchat public.
 
 ## Licence
 
@@ -105,7 +143,7 @@ Chaque évolution doit y être consignée, sans secrets ni données privées.
 
 Upload the contents of this `HybridBridge` folder to the root of a GitHub repository.
 Open Actions > Build HybridBridge APK > Run workflow. After completion,
-download the artifact `HybridBridge-0.5-debug-apk`, extract it and install
+download the artifact `HybridBridge-0.6-debug-apk`, extract it and install
 `app-debug.apk` on Android. This debug build is for local testing only.
 The workflow runs unit tests, builds the APK, checks test totals and embedded
 licenses, then publishes the APK, XML test results and corresponding source archive.
