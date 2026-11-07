@@ -34,7 +34,7 @@ jobs:
             $failures += [int]$report.testsuite.failures
             $errors += [int]$report.testsuite.errors
           }
-          if ($tests -lt 28 -or $failures -ne 0 -or $errors -ne 0) { throw "Tests invalides : $tests tests, $failures echecs, $errors erreurs" }
+          if ($tests -lt 37 -or $failures -ne 0 -or $errors -ne 0) { throw "Tests invalides : $tests tests, $failures echecs, $errors erreurs" }
           $apk = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path 'app/build/outputs/apk/debug/app-debug.apk'))
           try {
             foreach ($path in @('assets/licenses/GPL-3.0.txt', 'assets/licenses/Protobuf-License.txt', 'assets/licenses/BouncyCastle-LICENSE.html')) {
@@ -42,20 +42,39 @@ jobs:
             }
           } finally { $apk.Dispose() }
           Write-Output "$tests tests, $failures failures, $errors errors ; APK licenses verified"
+      - name: Verify APK permissions and signature
+        shell: pwsh
+        run: |
+          $apkPath = (Resolve-Path 'app/build/outputs/apk/debug/app-debug.apk').Path
+          $sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { $env:ANDROID_SDK_ROOT }
+          $tools = Join-Path $sdk 'build-tools/35.0.0'
+          $permissions = & (Join-Path $tools 'aapt') dump permissions $apkPath
+          if ($LASTEXITCODE -ne 0) { throw 'Lecture permissions APK impossible' }
+          $allowed = @('android.permission.BLUETOOTH_SCAN', 'android.permission.BLUETOOTH_CONNECT', 'android.permission.BLUETOOTH_ADVERTISE', 'android.permission.BLUETOOTH', 'android.permission.BLUETOOTH_ADMIN', 'android.permission.ACCESS_FINE_LOCATION')
+          $declared = [regex]::Matches(($permissions -join "`n"), "uses-permission(?:-sdk-23)?: name='([^']+)'") | ForEach-Object { $_.Groups[1].Value }
+          if ($declared.Count -eq 0) { throw 'Liste de permissions vide ou non analysable' }
+          foreach ($permission in $declared) { if ($permission -notin $allowed) { throw "Permission inattendue : $permission" } }
+          & (Join-Path $tools 'apksigner') verify $apkPath
+          if ($LASTEXITCODE -ne 0) { throw 'Signature APK invalide' }
+          New-Item -ItemType Directory -Force 'app/build/outputs/security' | Out-Null
+          $permissions | Set-Content 'app/build/outputs/security/permissions.txt'
+          $checksum = (Get-FileHash $apkPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$checksum  app-debug.apk" | Set-Content 'app/build/outputs/security/app-debug.apk.sha256'
+          Write-Output 'APK signature verified; permissions restricted to BLE and legacy location; debug APK, not Play Protect certification'
       - uses: actions/upload-artifact@v4
         with:
-          name: HybridBridge-0.5-debug-apk
+          name: HybridBridge-0.6-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: HybridBridge-0.5-test-results
+          name: HybridBridge-0.6-test-results
           path: app/build/test-results/testDebugUnitTest/*.xml
           if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         with:
-          name: HybridBridge-0.5-corresponding-source
+          name: HybridBridge-0.6-corresponding-source
           path: |
             app/src/
             app/build.gradle.kts
@@ -67,3 +86,8 @@ jobs:
             gradle.properties
             LICENSE
             docs/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HybridBridge-0.6-security-checks
+          path: app/build/outputs/security/
+          if-no-files-found: error
