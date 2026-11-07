@@ -34,7 +34,7 @@ jobs:
             $failures += [int]$report.testsuite.failures
             $errors += [int]$report.testsuite.errors
           }
-          if ($tests -lt 16 -or $failures -ne 0 -or $errors -ne 0) { throw "Tests invalides : $tests tests, $failures echecs, $errors erreurs" }
+          if ($tests -lt 21 -or $failures -ne 0 -or $errors -ne 0) { throw "Tests invalides : $tests tests, $failures echecs, $errors erreurs" }
           $apk = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path 'app/build/outputs/apk/debug/app-debug.apk'))
           try {
             foreach ($path in @('assets/licenses/GPL-3.0.txt', 'assets/licenses/Protobuf-License.txt')) {
@@ -60,6 +60,7 @@ jobs:
             app/src/
             app/build.gradle.kts
             app/build/meshtastic-protos/
+            app/build/bitchat-protocol-source/
             build.gradle.kts
             settings.gradle.kts
             gradle.properties
