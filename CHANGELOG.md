@@ -11,6 +11,49 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-07 - Version 0.3 : connexion GATT de test
+
+- Client GATT independant : connexion BLE directe, verification du service
+  et des caracteristiques officielles Meshtastic, lecture FromNum et batterie
+  facultative. Timeout de connexion 90 secondes et deconnexion explicite.
+- Selection d'un appareil detecte, boutons Connecter/Deconnecter et etats
+  distincts de scan, liaison BLE, service trouve et lecture GATT verifiee.
+- Scanner diagnostic 0.2 conserve ; duree de scan portee de 30 a 90 secondes
+  pour tenir compte du retour de detection tardive.
+- Fichiers : `MainActivity.kt`, nouveau `MeshtasticGattClient.kt`,
+  `app/build.gradle.kts`, nouveau `MeshtasticGattClientTest.kt`, workflow CI,
+  `docs/UPSTREAM_AUDIT.md`, README, cahier des charges et ce journal.
+- VersionCode 3, versionName 0.3 ; artefact `HybridBridge-0.3-debug-apk`.
+- Reference officielle verifiee : firmware 2.7.26, commit
+  `54e0d8d0ab2ff56b3a9ce967e53f79e49af560fb`, detail dans l'audit amont.
+- Tests ajoutes : little-endian, compteur non signe, zero, taille tronquee
+  et taille excessive. Commande CI :
+  `gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug`.
+- Sources publiees au commit
+  [11bc3dc](https://github.com/azatote/HybridBridge/commit/11bc3dc4eda77314a611b312da6e1134e0e011a8).
+- CI : [42363246117](https://github.com/azatote/HybridBridge/actions/runs/42363246117),
+  `completed / success`, tests unitaires et assembleDebug reussis.
+  Artefact 13571085179, `HybridBridge-0.3-debug-apk`, 822238 octets,
+  non expire, expiration annoncee le 5 fevrier 2027.
+  Aucun diagnostic signale par l'editeur sur les fichiers Kotlin/workflow/tests.
+- README : lien APK remplace par la version 0.3 et procedure de test GATT ajoutee.
+- Limites : test physique de connexion non realise ; aucun message, aucune
+  synchronisation protobuf du noeud, aucun flash ni modification de firmware.
+  L'appairage reste gere par Android ; accepter la demande systeme si presente.
+
+## 2026-11-07 - Cibles Android recents et Meshtastic 2.7
+
+- Demande utilisateur : compatibilite avec les Android recents et Meshtastic 2.7.
+- Fichiers : `HYBRIDBRIDGE_SPECIFICATION.md` (section 2.4) et `CHANGELOG.md`.
+- Priorite Android 12 et plus, dernieres versions stables incluses ; matrice
+  de validation prevue pour Android 12 a 16. Minimum actuel Android 8 conserve.
+- Firmware Meshtastic cible : 2.7.x ; correctif/build de chaque Heltec a relever.
+  Ne pas confondre version du firmware et version de la dependance SDK.
+- SDK Android actuel : compileSdk/targetSdk 35, sans changement Gradle ici.
+- Verification : coherence avec la configuration Gradle locale inspectee.
+- Limites : aucune certification Android 12 a 16 ou firmware 2.7.x complete ;
+  aucun nouvel APK, test materiel ou changement du code dans cette intervention.
+
 ## 2026-11-06 - Correction du retour de test sur telephone
 
 - L'utilisateur retire son premier constat d'echec : apres une longue attente,
@@ -124,6 +167,8 @@ Les entrees ci-dessous retracent uniquement les faits observes dans cette sessio
 
 ## Travaux restants
 
+- Installer l'APK 0.3 et valider la lecture GATT FromNum, la batterie si disponible,
+  la deconnexion et une deuxieme connexion sur le Samsung et le Heltec.
 - Reproduire la detection rapportee, mesurer le delai et relever les versions
   de l'APK, d'Android et du firmware Meshtastic.
 - Poursuivre ensuite les phases du cahier des charges, sans annoncer une
