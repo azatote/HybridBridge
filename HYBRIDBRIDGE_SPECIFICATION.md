@@ -816,8 +816,12 @@ Une fonctionnalité n'est considérée comme terminée que si :
     le 7 novembre 2026. Licence GPLv3 et sources publiques approuvées par l'utilisateur.
 - L'utilisateur confirme l'ouverture sans crash, le Bluetooth, la synchronisation
     et les échanges Meshtastic aller-retour avec la 0.4.1 sur son installation.
-- Le codec officiel Bitchat Android 2.2.0 est extrait sans modification et testé
-    en CI ; le moteur BLE et les échanges avec un client officiel ne sont pas livrés.
+- La 0.5 ajoute un endpoint BLE public de test, basé sur le codec, les annonces
+    et le validateur Bitchat 2.2.0, avec identité locale signée/protégée au repos.
+    La CI [42387811211](https://github.com/azatote/HybridBridge/actions/runs/42387811211)
+    est verte : tests, quatre vues Android 14/15 simulées et licences vérifiés.
+    L'interopérabilité sur les téléphones reste à tester. Ce n'est pas un moteur
+    mesh complet ; privés Noise et pont LoRa ne sont pas livrés.
 - Le dépôt GitHub de l'utilisateur est nommé « Pont hybride » dans son interface ; son chemin visible dans la capture était `azatote/HybridBridge`. Vérifier le dépôt local réellement ouvert avant de modifier quoi que ce soit.
 
 ### Ce qui n'est pas encore validé

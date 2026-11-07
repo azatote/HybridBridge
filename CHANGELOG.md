@@ -11,6 +11,35 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-07 - Version 0.5 : endpoint Bitchat BLE public de test
+
+- Serveur GATT et annonce sous les UUID officiels Bitchat 2.2.0 ; le client
+  officiel initie la liaison. Endpoint public limite, pas moteur mesh complet.
+- Codec, IdentityAnnouncement, PeerCapabilities, NoisePeerIdentity et validateur
+  d'annonce officiels conserves depuis le commit 20501fdfe0d56c7705c377d4a263b01d8f38eeeb.
+- Identite X25519/Ed25519 generee par Bouncy Castle 1.80 ; stockage des graines
+  chiffre AES-GCM avec cle Android Keystore, dans noBackupFilesDir. Pas de PIN collecte.
+- Annonces auto-signees liees au peer ID officiel ; verification Ed25519 des
+  textes, rejet des incoherences, modifications, doublons et prives. Ce n'est
+  pas une preuve de possession Noise ou de confiance humaine dans le pair.
+- Notifications serialisees, limite de 8 liaisons et 32 notifications en file,
+  messages publics de 120 octets UTF-8, intervalle 2 secondes ; pas de fragments.
+- Vue Bitchat, activation/arret explicites, annonce permission BLUETOOTH_ADVERTISE,
+  arret au passage en arriere-plan, quatre vues testees sous Android 14/15 simules.
+- Fichiers : nouveaux BitchatIdentity, BitchatPublicProtocol, BitchatBleEndpoint,
+  BitchatPublicProtocolTest ; MainActivity/MainActivityTest, manifeste, Gradle,
+  workflow, README, audit, decisions, cahier des charges et ce journal.
+- VersionCode 6, versionName 0.5. Trois licences embarquees et sources correspondantes publiees.
+- CI [42387811211](https://github.com/azatote/HybridBridge/actions/runs/42387811211),
+  commit 83c2d8852728eb1c5d40b38c7345e6f2d1eb27b9, `completed / success`.
+  Tests/compilation reussis, controle d'au moins 28 tests sans erreur et des licences reussi.
+  APK 13580083731 (5936269 octets), rapports 13580585698, sources 13580049074,
+  expiration annoncee le 5 fevrier 2027.
+- Validation physique Bitchat et du stockage Keystore encore attendue ; aucune
+  compatibilite inter-client affirmee sans le test des deux telephones.
+- Transport Meshtastic valide conserve ; aucun pont LoRa, prive Noise, E2EE natif,
+  routage mesh complet, service de fond ni signature release ajoute.
+
 ## 2026-11-07 - Socle de protocole Bitchat officiel 2.2.0
 
 - Test materiel Meshtastic aller-retour confirme par l'utilisateur ; debut de l'etape Bitchat.
