@@ -1,4 +1,22 @@
-# Audit amont - HybridBridge 0.5
+# Audit amont - HybridBridge 0.6
+
+## Pont public 0.6
+
+- Les broadcasts Meshtastic deja decodes par le client autorise sont les seuls
+  candidats ; le noeud local, les messages directs, ciphertexts et autres ports
+  ne sont pas transferes. Canal choisi et prefixe /hb avec espace requis.
+- Relais unidirectionnel vers le texte public Bitchat signe par HybridBridge.
+  L'origine radio est une attribution declaree, pas une signature de l'auteur.
+- Sans fragmentation : texte et attribution <=120 octets UTF-8, rejets visibles.
+- Deduplication de 512 identifiants persiste sans contenu ; file RAM8, expiration30s,
+  remise BLE limitee a une tentative/5s. Marque HB refusee en reinjection.
+- Desactive par defaut, confirmation requise ; desactive a la deconnexion,
+  au changement du noeud/canaux et au passage en arriere-plan.
+- CI [42393495373](https://github.com/azatote/HybridBridge/actions/runs/42393495373) verte :
+  au moins37 tests, licences, signature et permissions APK verifiees ; checksum publie.
+- Pas de garantie antivirus/Play Protect ; distribution debug de test seulement.
+  La signature release stable et le test physique du parcours restent attendus.
+  Voir SECURITY.md pour les limites et la conduite en cas d'alerte Android.
 
 ## Preparation de l'application complete - 7 novembre 2026
 

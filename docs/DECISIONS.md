@@ -47,6 +47,21 @@ au repos par Android Keystore/AES-GCM. L'annonce auto-signee ne remplace ni
 l'authentification Noise complete ni une verification humaine des correspondants.
 Le pont LoRa et les messages prives restent desactives.
 
+## 2026-11-07 - Pont public Meshtastic vers Bitchat
+
+La 0.6 vise le trajet Heltec -> LoRa -> Heltec -> HybridBridge -> Bitchat.
+Il s'agit d'un pont unidirectionnel, sans transfert Bitchat -> LoRa.
+
+Le canal est choisi explicitement, activation desactivee par defaut et
+confirmation requise. Seuls les textes prefixes par `/hb` suivi d'un espace peuvent sortir du
+canal. Pas de troncature, attribution obligatoire, deduplication persistante
+de metadonnees sans contenu, quotas, expiration et arret hors premier plan.
+
+Une signature APK et une liste de permissions justifiee ne garantissent pas
+l'absence d'alerte Play Protect. Fournir les controles et le checksum, ne pas
+contourner les protections, puis preparer une signature release stable avant
+distribution finale. Voir SECURITY.md pour les limites exactes.
+
 Le transport des messages est limite aux canaux actifs selectionnes et
 aux broadcasts texte. Aucun message direct ou opaque ne doit etre exporte
 vers un autre reseau. Une ecriture BLE ne vaut pas confirmation de livraison.
