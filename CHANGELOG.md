@@ -11,6 +11,18 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-07 - Retour materiel positif sur la 0.4.1
+
+- L'utilisateur confirme : ouverture sans crash et connexion Bluetooth OK
+  sur le Samsung Android 14 utilise pour le test.
+- Le crash de demarrage n'est plus observe lors de cet essai de la 0.4.1.
+  La cause exacte de la fermeture 0.4 reste non demontree.
+- Synchronisation du noeud/canaux et livraison des messages dans les deux sens :
+  non encore confirmees par ce retour. Ne pas les marquer comme validees.
+- Fichiers documentaires : README et ce journal ; aucun changement de code ni nouvel APK.
+- Prochain test : etat Meshtastic synchronise, puis un texte de canal recu
+  sur le second noeud/client et un texte de retour affiche dans HybridBridge.
+
 ## 2026-11-07 - Incident : fermeture au demarrage de la 0.4
 
 - Retour utilisateur : application 0.4 fermee des son ouverture ; vider le
@@ -44,8 +56,8 @@ Les entrees ci-dessous retracent uniquement les faits observes dans cette sessio
   rapports 13572854293 ; expiration annoncee le 5 fevrier 2027.
 - README mis a jour : lien 0.4.1 et premier essai sans connexion Heltec.
 - ADB non trouve sur le PC lors de cette intervention ; crash reel non collecte.
-- Statut : amelioration de compatibilite et diagnostic, correction physique
-  du crash a confirmer par le prochain essai sur le Samsung.
+- Statut actualise : ouverture sans crash et Bluetooth confirmes par
+  l'utilisateur avec la 0.4.1 sur son Samsung Android 14, voir le retour ci-dessus.
 
 ## 2026-11-07 - Version 0.4 : synchronisation et messagerie Meshtastic
 

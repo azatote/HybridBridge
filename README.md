@@ -15,7 +15,9 @@ Version de développement : le pont Bitchat et le chiffrement privé ne sont pas
 La 0.4 a été signalée comme se fermant au démarrage sur un Samsung Android 14.
 La 0.4.1 remplace les anciens onglets et ajoute un diagnostic d'erreur pendant
 la construction de l'écran. Démarrage et dessin des trois vues testés sous
-Android 14/15 simulés ; résolution du crash réel encore à confirmer sur le Samsung.
+Android 14/15 simulés. L'utilisateur confirme ensuite une ouverture sans crash
+et une connexion Bluetooth OK sur son Samsung Android 14. Les échanges de
+messages restent à confirmer ; la cause exacte du crash 0.4 n'est pas démontrée.
 
 ## État réel
 
