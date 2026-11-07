@@ -1,9 +1,9 @@
-# HybridBridge 0.4 — messagerie Meshtastic de test
+# HybridBridge 0.4.1 — messagerie et diagnostic de démarrage
 
-**[Télécharger l'APK Android 0.4 de test (ZIP)](https://github.com/azatote/HybridBridge/actions/runs/42365776287/artifacts/13571880617)**
+**[Télécharger l'APK Android 0.4.1 de test (ZIP)](https://github.com/azatote/HybridBridge/actions/runs/42369864068/artifacts/13572958710)**
 
-[Sources correspondantes au build](https://github.com/azatote/HybridBridge/actions/runs/42365776287/artifacts/13571114910)
-et [rapports de tests](https://github.com/azatote/HybridBridge/actions/runs/42365776287/artifacts/13572145016).
+[Sources correspondantes au build](https://github.com/azatote/HybridBridge/actions/runs/42369864068/artifacts/13572978426)
+et [rapports de tests](https://github.com/azatote/HybridBridge/actions/runs/42369864068/artifacts/13572854293).
 
 Connexion GitHub requise. Extraire le ZIP puis installer `app-debug.apk`.
 Build debug pour test uniquement ; lien valable jusqu'au 5 février 2027,
@@ -11,6 +11,11 @@ sauf suppression anticipée de l'artefact.
 
 Application Android Kotlin native pour **synchroniser un Heltec et tester les messages de canal Meshtastic**, sans flasher les appareils.
 Version de développement : le pont Bitchat et le chiffrement privé ne sont pas encore livrés.
+
+La 0.4 a été signalée comme se fermant au démarrage sur un Samsung Android 14.
+La 0.4.1 remplace les anciens onglets et ajoute un diagnostic d'erreur pendant
+la construction de l'écran. Démarrage et dessin des trois vues testés sous
+Android 14/15 simulés ; résolution du crash réel encore à confirmer sur le Samsung.
 
 ## État réel
 
@@ -22,7 +27,7 @@ Version de développement : le pont Bitchat et le chiffrement privé ne sont pas
 
 ## Test Sur Téléphone
 
-1. Installer l'APK 0.4. Si Android refuse la mise à jour pour signature différente, désinstaller l'ancien APK de test puis installer le nouveau ; les données locales de l'ancien seront perdues.
+1. Installer l'APK 0.4.1. Vérifier d'abord l'ouverture et les vues Appareils, Messages et Etat, sans connecter le Heltec. Si un écran d'erreur apparaît, utiliser Partager le diagnostic. Si Android refuse la mise à jour pour signature différente, désinstaller l'ancien APK de test puis installer le nouveau ; les données locales de l'ancien seront perdues.
 2. Allumer le Heltec, activer son Bluetooth et déconnecter Meshtastic officiel de ce nœud.
 3. Accorder les permissions Appareils à proximité sur Android 12+ ; sur Android 8 à 11, autoriser la localisation et activer sa fonction système.
 4. Garder HybridBridge au premier plan, rechercher et sélectionner le Heltec dans la liste. Utiliser le mode diagnostic si nécessaire ; un appareil BLE non identifié peut être rejeté après connexion.
@@ -77,7 +82,7 @@ Chaque évolution doit y être consignée, sans secrets ni données privées.
 
 Upload the contents of this `HybridBridge` folder to the root of a GitHub repository.
 Open Actions > Build HybridBridge APK > Run workflow. After completion,
-download the artifact `HybridBridge-0.4-debug-apk`, extract it and install
+download the artifact `HybridBridge-0.4.1-debug-apk`, extract it and install
 `app-debug.apk` on Android. This debug build is for local testing only.
 The workflow runs unit tests, builds the APK, checks test totals and embedded
 licenses, then publishes the APK, XML test results and corresponding source archive.

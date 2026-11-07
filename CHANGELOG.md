@@ -11,6 +11,42 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-07 - Incident : fermeture au demarrage de la 0.4
+
+- Retour utilisateur : application 0.4 fermee des son ouverture ; vider le
+  cache, desinstaller et reinstaller n'a pas resolu le probleme.
+- Les tests precedents couvraient le protocole, mais ne demarraient pas l'Activity.
+- Ajout de Robolectric 4.14.1 et d'un test de lancement Android 15 (API 35)
+  de MainActivity, sans connexion Bluetooth.
+- Fichiers de diagnostic : `app/build.gradle.kts`, nouveau `MainActivityTest.kt`
+  et ce journal. Aucun correctif affirme avant la reproduction.
+- CI de reproduction : [42366598698](https://github.com/azatote/HybridBridge/actions/runs/42366598698).
+  Demarrage simule Android 15 reussi, sans reproduction du crash.
+- L'utilisateur confirme Android 14 sur le Samsung.
+- CI [42366918289](https://github.com/azatote/HybridBridge/actions/runs/42366918289) :
+  demarrage, mesure et dessin initiaux reussis sous Android 14 et 15 simules.
+  Cela ne reproduit pas les particularites du firmware Samsung.
+- Version 0.4.1 de diagnostic : remplacement de TabHost/TabWidget par une
+  navigation RadioGroup et vues explicites ; aucune cause OEM affirmee comme prouvee.
+- Exception RuntimeException pendant la construction de l'interface : affichage
+  d'un diagnostic partageable (API Android, classe d'exception et pile de methodes),
+  sans message d'exception, contenu de conversation, identifiant Bluetooth ni cle.
+  Les erreurs hors de cette construction peuvent encore necessiter un log Android.
+- Tests renforces : les trois vues normales doivent demarrer et etre dessinees
+  sous API 34/35 ; un ecran de diagnostic seul ne compte pas comme succes.
+- VersionCode 5, versionName 0.4.1 ; seuil CI releve a 16 tests.
+  Fichiers : MainActivity, MainActivityTest, Gradle app, workflow et journal.
+- CI 0.4.1 [42369864068](https://github.com/azatote/HybridBridge/actions/runs/42369864068),
+  commit `fda9571c0e8658310f48c8186addfdec89bd058f` : `completed / success`.
+  Tests Android 14/15 des trois vues, protocole et compilation reussis ;
+  verification CI d'au moins 16 tests sans erreur et des licences de l'APK.
+  Artefact APK 13572958710, 2622249 octets ; sources 13572978426,
+  rapports 13572854293 ; expiration annoncee le 5 fevrier 2027.
+- README mis a jour : lien 0.4.1 et premier essai sans connexion Heltec.
+- ADB non trouve sur le PC lors de cette intervention ; crash reel non collecte.
+- Statut : amelioration de compatibilite et diagnostic, correction physique
+  du crash a confirmer par le prochain essai sur le Samsung.
+
 ## 2026-11-07 - Version 0.4 : synchronisation et messagerie Meshtastic
 
 - Licence GPLv3 et sources publiques approuvees par l'utilisateur ; ajout
