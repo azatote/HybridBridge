@@ -11,6 +11,23 @@ modifies, raison du changement, verification et resultat, reference GitHub
 Ne jamais inclure de secrets, de PSK, de messages prives ou d'adresses Bluetooth.
 Les entrees ci-dessous retracent uniquement les faits observes dans cette session.
 
+## 2026-11-07 - Socle de protocole Bitchat officiel 2.2.0
+
+- Test materiel Meshtastic aller-retour confirme par l'utilisateur ; debut de l'etape Bitchat.
+- Release de reference Bitchat : v2.2.0, commit 20501fdfe0d56c7705c377d4a263b01d8f38eeeb.
+- Extraction de six fichiers officiels inchangees au build, dependances fermees
+  sur Android/Java/Parcelize ; aucun faux moteur BLE ni protocole maison.
+- Fichiers : `app/build.gradle.kts`, nouveau `BitchatProtocolTest.kt`, workflow,
+  audit amont, decisions, README et ce journal. Cinq tests de codec ajoutes, seuil CI passe a 21.
+- Sources GPL Bitchat et licence amont incluses dans l'archive de sources correspondantes.
+- CI [42371877884](https://github.com/azatote/HybridBridge/actions/runs/42371877884),
+  commit 04a216ba60057cb02ae51db85b186c058553b0f5 : `completed / success`.
+  Compilation, tests du codec et tests existants reussis ; controle CI d'au
+  moins 21 tests sans echec/erreur et des licences embarquees reussi.
+- Aucun changement de l'interface/transport Meshtastic ; lien APK materiel 0.4.1 conserve.
+- Limites : pas encore de scan/advertising GATT Bitchat, de participation au mesh,
+  d'identites/sessions raccordees ou d'echange de messages avec un client officiel.
+
 ## 2026-11-07 - Retour materiel positif sur la 0.4.1
 
 - L'utilisateur confirme : ouverture sans crash et connexion Bluetooth OK
@@ -19,11 +36,12 @@ Les entrees ci-dessous retracent uniquement les faits observes dans cette sessio
   La cause exacte de la fermeture 0.4 reste non demontree.
 - Retour suivant : l'utilisateur confirme l'etat Meshtastic synchronise,
   avec firmware et canaux affiches. Version exacte du firmware non communiquee.
-- Livraison des messages dans les deux sens : non encore confirmee.
-  Ne pas la deduire de la connexion ou de la synchronisation.
+- Retour suivant : test d'envoi et reponse recue confirme OK par l'utilisateur.
+  Echanges Meshtastic aller-retour valides sur son installation de test.
+  Ne pas generaliser ce resultat a tous les firmwares ou telephones.
 - Fichiers documentaires : README et ce journal ; aucun changement de code ni nouvel APK.
-- Prochain test : un texte de canal recu
-  sur le second noeud/client et un texte de retour affiche dans HybridBridge.
+- Etape suivante : audit et integration Bitchat BLE, puis test avec un client
+  officiel sur un autre telephone ; le pont inter-reseaux reste non livre.
 
 ## 2026-11-07 - Incident : fermeture au demarrage de la 0.4
 

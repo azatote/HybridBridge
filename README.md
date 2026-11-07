@@ -16,8 +16,13 @@ La 0.4 a été signalée comme se fermant au démarrage sur un Samsung Android 1
 La 0.4.1 remplace les anciens onglets et ajoute un diagnostic d'erreur pendant
 la construction de l'écran. Démarrage et dessin des trois vues testés sous
 Android 14/15 simulés. L'utilisateur confirme ensuite une ouverture sans crash
-et une connexion Bluetooth OK sur son Samsung Android 14. Les échanges de
-messages restent à confirmer ; la cause exacte du crash 0.4 n'est pas démontrée.
+et une connexion Bluetooth OK sur son Samsung Android 14, puis la synchronisation
+et un échange de messages aller-retour réussi sur son installation. La cause
+exacte du crash 0.4 n'est pas démontrée ; ce test ne certifie pas tous les appareils.
+
+L'intégration Bitchat débute par son codec officiel 2.2.0, extrait sans modification
+et testé en CI. Le moteur BLE et les échanges avec un client officiel ne sont
+pas encore raccordés ; aucune nouvelle installation n'est requise pour ce socle.
 
 ## État réel
 
