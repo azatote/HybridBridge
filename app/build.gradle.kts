@@ -17,7 +17,10 @@ val prepareBitchatProtocol by tasks.registering {
         val paths = listOf(
             "protocol/BinaryProtocol.kt", "protocol/CompressionUtil.kt",
             "protocol/DecompressionResourcePool.kt", "protocol/MessagePadding.kt",
-            "protocol/PacketPayloadLimits.kt", "util/AppConstants.kt"
+            "protocol/PacketPayloadLimits.kt", "util/AppConstants.kt",
+            "model/IdentityAnnouncement.kt", "model/PeerCapabilities.kt",
+            "mesh/AnnouncementIdentityValidator.kt", "noise/NoisePeerIdentity.kt",
+            "util/ByteArrayExtensions.kt"
         )
         for (path in paths) {
             val target = bitchatProtocolDirectory.get().file("com/bitchat/android/$path").asFile
@@ -63,13 +66,16 @@ val prepareMeshtasticProtos by tasks.registering {
         val protobufLicense = licenseDirectory.get().file("licenses/Protobuf-License.txt").asFile
         URI("https://raw.githubusercontent.com/protocolbuffers/protobuf/v25.5/LICENSE")
             .toURL().openStream().use { source -> protobufLicense.outputStream().use { source.copyTo(it) } }
+        val bouncyLicense = licenseDirectory.get().file("licenses/BouncyCastle-LICENSE.html").asFile
+        URI("https://raw.githubusercontent.com/bcgit/bc-java/r1rv80/LICENSE.html")
+            .toURL().openStream().use { source -> bouncyLicense.outputStream().use { source.copyTo(it) } }
     }
 }
 
 android {
     namespace = "fr.hybridbridge.app"
     compileSdk = 35
-    defaultConfig { applicationId = "fr.hybridbridge.app"; minSdk = 26; targetSdk = 35; versionCode = 5; versionName = "0.4.1" }
+    defaultConfig { applicationId = "fr.hybridbridge.app"; minSdk = 26; targetSdk = 35; versionCode = 6; versionName = "0.5"; multiDexEnabled = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
     testOptions { unitTests.isIncludeAndroidResources = true }
@@ -100,6 +106,7 @@ protobuf {
 }
 
 dependencies {
+    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
     implementation("com.google.protobuf:protobuf-java:3.25.5")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
