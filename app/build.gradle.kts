@@ -48,6 +48,7 @@ android {
     defaultConfig { applicationId = "fr.hybridbridge.app"; minSdk = 26; targetSdk = 35; versionCode = 4; versionName = "0.4" }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
+    testOptions { unitTests.isIncludeAndroidResources = true }
     sourceSets.getByName("main").proto {
         srcDir(schemaDirectory)
         exclude("google/protobuf/descriptor.proto")
@@ -72,5 +73,6 @@ protobuf {
 dependencies {
     implementation("com.google.protobuf:protobuf-java:3.25.5")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }
 
