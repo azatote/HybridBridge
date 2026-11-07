@@ -30,6 +30,23 @@ Le premier socle Bitchat reutilise le codec officiel v2.2.0 sans modification,
 depuis son commit epingle. Il doit rester separe du transport et des sessions
 tant que le moteur BLE n'est pas raccorde et teste sur un client officiel.
 
+## 2026-11-07 - Endpoint BLE public de test
+
+Le service mesh complet Bitchat depend du routage, de Noise et de services de
+l'application officielle. La 0.5 ajoute un endpoint BLE public limite,
+reutilisant codec, annonces et validation d'identite officiels v2.2.0.
+
+Les annonces doivent etre signees par Ed25519 et leur identifiant lie a la
+cle publique X25519 selon le contrat officiel. Les messages directs, opaques,
+sessions Noise privees et transferts de fichiers restent non pris en charge.
+Cet endpoint ne sera pas annonce comme un moteur mesh complet. Les echanges
+avec le client officiel devront etre testes sur les deux telephones.
+
+La cle locale est chargee/generee lors de l'activation explicite et protegee
+au repos par Android Keystore/AES-GCM. L'annonce auto-signee ne remplace ni
+l'authentification Noise complete ni une verification humaine des correspondants.
+Le pont LoRa et les messages prives restent desactives.
+
 Le transport des messages est limite aux canaux actifs selectionnes et
 aux broadcasts texte. Aucun message direct ou opaque ne doit etre exporte
 vers un autre reseau. Une ecriture BLE ne vaut pas confirmation de livraison.

@@ -1,4 +1,4 @@
-# Audit amont - Meshtastic 0.4
+# Audit amont - HybridBridge 0.5
 
 ## Preparation de l'application complete - 7 novembre 2026
 
@@ -47,7 +47,34 @@
   avec la 0.4.1. Bitchat, routage inter-reseaux, E2EE, reprise durable et service
   de fond restent non livres.
 
-## Debut de l'audit Bitchat BLE
+## Endpoint Bitchat BLE public 0.5
+
+- Reference : Bitchat Android v2.2.0, commit 20501fdfe0d56c7705c377d4a263b01d8f38eeeb.
+- Le service/characteristique/CCCD sont repris depuis AppConstants.Mesh.Gatt.
+  BluetoothGattServerManager confirme READ/WRITE/WRITE_NO_RESPONSE/NOTIFY,
+  annonce du service et scan-response avec peer ID sur 8 octets.
+- BluetoothGattClientManager demande une MTU de 517 ; endpoint limite aux
+  paquets entiers jusqu'a 512 octets et refuse les prepared writes/offsets.
+- sendMessage officiel emet du texte UTF-8 dans MESSAGE broadcast. L'endpoint
+  utilise ce format, les annonces TLV et le validateur officiels, sans formats supposes.
+- Le peer ID correspond aux 8 premiers octets de SHA-256 de la cle publique
+  X25519. Signatures Ed25519 sur toBinaryDataForSigning, padding canonique conserve.
+- Capabilities.NONE annonce : pas de private media, groupes, bridge ou prekeys.
+  Aucune session Noise privee n'est implementee ou contournee.
+- Bouncy Castle bcprov-jdk18on 1.80, licence permissive officielle r1rv80 incluse
+  dans l'APK. Identite chiffree au repos avec AES-GCM/Android Keystore et fichier atomique noBackup.
+- Les annonces auto-signees et les cles memorisees pour la session ne constituent
+  pas une authentification Noise complete ni une verification humaine de l'identite.
+- Aucun texte/cle privee journalise par les nouvelles classes. Types Noise et
+  fichiers ignores avant decodage ; messages adresses rejetes avant affichage.
+  Les logs du codec examines portent sur tailles/erreurs.
+- Interop physique et stockage Keystore a valider sur Samsung ; CI
+  [42387811211](https://github.com/azatote/HybridBridge/actions/runs/42387811211) verte,
+  au moins 28 tests et licences verifies. Notifications finies ne prouvent pas une lecture distante.
+- Limites : serveur BLE public seulement, pas de scan/client GATT Bitchat,
+  de relais, fragments, gossip sync, Noise prive, pont LoRa ou fonctionnement de fond.
+
+## Premier socle de protocole Bitchat BLE
 
 - Release stable retenue : v2.2.0, publiee le 28 octobre 2026, commit
   `20501fdfe0d56c7705c377d4a263b01d8f38eeeb`.
